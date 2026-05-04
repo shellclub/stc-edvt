@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ระบบรายงานฝึกงาน | วิทยาลัยเทคนิคสุพรรณบุรี</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0B1D3A;
+    --navy-mid: #132847;
+    --navy-light: #1E3A5F;
+    --gold: #C9A84C;
+    --gold-light: #E8C878;
+    --gold-pale: #F5E4B0;
+    --white: #F9F5EE;
+    --gray: #8A95A3;
+    --gray-light: #D4D9E0;
+    --red: #C0392B;
+    --green: #1A7A4A;
+    --radius: 12px;
+    --shadow: 0 4px 24px rgba(11,29,58,0.18);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: #F0EDE6;
+    color: var(--navy);
+    min-height: 100vh;
+  }
+
+  /* ===== SIDEBAR ===== */
+  .sidebar {
+    position: fixed; top: 0; left: 0; bottom: 0;
+    width: 260px;
+    background: var(--navy);
+    display: flex; flex-direction: column;
+    z-index: 100;
+    box-shadow: 4px 0 20px rgba(0,0,0,0.2);
+  }
+
+  .sidebar-header {
+    padding: 28px 24px 20px;
+    border-bottom: 1px solid rgba(201,168,76,0.2);
+  }
+
+  .college-badge {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .badge-icon {
+    width: 44px; height: 44px;
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+
+  .college-name {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--gold-light);
+    line-height: 1.4;
+  }
+
+  .system-title {
+    font-size: 13px;
+    color: rgba(255,255,255,0.55);
+    font-weight: 400;
+  }
+
+  .sidebar-nav { padding: 16px 12px; flex: 1; overflow-y: auto; }
+
+  .nav-section-label {
+    font-size: 10.5px;
+    color: rgba(255,255,255,0.35);
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 10px 12px 6px;
+  }
+
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: rgba(255,255,255,0.65);
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 2px;
+    position: relative;
+  }
+
+  .nav-item:hover { background: rgba(201,168,76,0.1); color: var(--gold-light); }
+  .nav-item.active { background: rgba(201,168,76,0.15); color: var(--gold-light); }
+  .nav-item.active::before {
+    content: '';
+    position: absolute; left: 0; top: 20%; bottom: 20%;
+    width: 3px; border-radius: 0 3px 3px 0;
+    background: var(--gold);
+  }
+
+  .nav-icon { font-size: 17px; width: 22px; text-align: center; }
+
+  .nav-badge {
+    margin-left: auto;
+    background: var(--gold);
+    color: var(--navy);
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 20px;
+  }
+
+  .sidebar-footer {
+    padding: 16px 20px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    display: flex; align-items: center; gap: 10px;
+  }
+
+  .user-avatar {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, var(--gold), #a07030);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; color: white; font-size: 14px;
+    flex-shrink: 0;
+  }
+
+  .user-info { flex: 1; min-width: 0; }
+  .user-name { font-size: 13px; font-weight: 600; color: white; }
+  .user-role { font-size: 11px; color: rgba(255,255,255,0.45); }
+
+  .logout-btn {
+    background: none; border: none; cursor: pointer;
+    color: rgba(255,255,255,0.4); font-size: 16px;
+    padding: 4px;
+    transition: color 0.2s;
+  }
+  .logout-btn:hover { color: var(--red); }
+
+  /* ===== MAIN CONTENT ===== */
+  .main {
+    margin-left: 260px;
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+  }
+
+  .topbar {
+    background: white;
+    padding: 0 32px;
+    height: 64px;
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid #E5E0D8;
+    position: sticky; top: 0; z-index: 50;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+
+  .topbar-left h1 {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--navy);
+  }
+
+  .topbar-left p { font-size: 12px; color: var(--gray); }
+
+  .topbar-right { display: flex; align-items: center; gap: 12px; }
+
+  .topbar-btn {
+    background: none; border: 1px solid var(--gray-light);
+    border-radius: 8px; padding: 7px 14px;
+    cursor: pointer; font-size: 13px; font-weight: 500;
+    color: var(--navy); font-family: 'Sarabun', sans-serif;
+    display: flex; align-items: center; gap: 6px;
+    transition: all 0.2s;
+  }
+  .topbar-btn:hover { border-color: var(--gold); color: var(--gold); }
+
+  .btn-primary {
+    background: var(--navy);
+    color: white; border: none;
+    border-radius: 8px; padding: 8px 18px;
+    cursor: pointer; font-size: 13px; font-weight: 600;
+    font-family: 'Sarabun', sans-serif;
+    display: flex; align-items: center; gap: 7px;
+    transition: all 0.2s;
+  }
+  .btn-primary:hover { background: var(--navy-light); transform: translateY(-1px); }
+
+  .content { padding: 28px 32px; flex: 1; }
+
+  /* ===== STATS GRID ===== */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+
+  .stat-card {
+    background: white;
+    border-radius: var(--radius);
+    padding: 20px 22px;
+    border: 1px solid #EAE5DC;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+
+  .stat-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+  .stat-card.blue::before { background: var(--navy); }
+  .stat-card.gold::before { background: var(--gold); }
+  .stat-card.green::before { background: var(--green); }
+  .stat-card.red::before { background: var(--red); }
+
+  .stat-label { font-size: 12px; color: var(--gray); font-weight: 500; margin-bottom: 8px; }
+  .stat-value { font-size: 28px; font-weight: 700; color: var(--navy); line-height: 1; }
+  .stat-sub { font-size: 11.5px; color: var(--gray); margin-top: 6px; }
+  .stat-sub span { color: var(--green); font-weight: 600; }
+
+  .stat-icon {
+    position: absolute; right: 16px; top: 16px;
+    font-size: 26px; opacity: 0.15;
+  }
+
+  /* ===== MAIN GRID ===== */
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 20px;
+    margin-bottom: 24px;
+  }
+
+  /* ===== TABLE CARD ===== */
+  .card {
+    background: white;
+    border-radius: var(--radius);
+    border: 1px solid #EAE5DC;
+    overflow: hidden;
+  }
+
+  .card-header {
+    padding: 18px 22px;
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid #F0EDE6;
+  }
+
+  .card-title { font-size: 15px; font-weight: 700; color: var(--navy); }
+  .card-sub { font-size: 12px; color: var(--gray); margin-top: 2px; }
+
+  .filter-row {
+    padding: 14px 22px;
+    display: flex; gap: 10px; align-items: center;
+    border-bottom: 1px solid #F5F2EE;
+    background: #FAFAF8;
+  }
+
+  .search-wrap {
+    position: relative; flex: 1;
+  }
+
+  .search-wrap input {
+    width: 100%; padding: 8px 12px 8px 34px;
+    border: 1px solid #DDD8D0;
+    border-radius: 7px; font-size: 13px; font-family: 'Sarabun', sans-serif;
+    background: white; color: var(--navy);
+    transition: border-color 0.2s;
+  }
+  .search-wrap input:focus { outline: none; border-color: var(--gold); }
+
+  .search-icon {
+    position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
+    color: var(--gray); font-size: 14px;
+  }
+
+  select {
+    padding: 8px 12px; border: 1px solid #DDD8D0;
+    border-radius: 7px; font-size: 13px; font-family: 'Sarabun', sans-serif;
+    background: white; color: var(--navy); cursor: pointer;
+  }
+  select:focus { outline: none; border-color: var(--gold); }
+
+  table { width: 100%; border-collapse: collapse; }
+  thead th {
+    background: #F7F4EF;
+    padding: 11px 16px;
+    text-align: left; font-size: 12px;
+    color: var(--gray); font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.05em;
+  }
+  tbody tr { border-bottom: 1px solid #F5F2EE; transition: background 0.15s; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: #FAF8F4; }
+  td { padding: 12px 16px; font-size: 13.5px; color: var(--navy); }
+
+  .student-cell { display: flex; align-items: center; gap: 10px; }
+  .s-avatar {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: linear-gradient(135deg, #1E3A5F, #0B1D3A);
+    color: white; display: flex; align-items: center;
+    justify-content: center; font-size: 13px; font-weight: 700;
+    flex-shrink: 0;
+  }
+  .s-name { font-weight: 600; font-size: 13.5px; }
+  .s-id { font-size: 11px; color: var(--gray); font-family: 'IBM Plex Mono', monospace; }
+
+  .status-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 4px 10px; border-radius: 20px;
+    font-size: 11.5px; font-weight: 600;
+  }
+  .status-badge.submitted { background: #E8F5EE; color: var(--green); }
+  .status-badge.pending { background: #FEF9EC; color: #A07030; }
+  .status-badge.approved { background: #E8F0FA; color: #1A4B8C; }
+  .status-badge.late { background: #FDEEEC; color: var(--red); }
+
+  .status-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: currentColor;
+  }
+
+  .action-btn {
+    background: none; border: 1px solid #DDD8D0;
+    border-radius: 6px; padding: 5px 10px;
+    cursor: pointer; font-size: 12px; color: var(--navy);
+    font-family: 'Sarabun', sans-serif;
+    transition: all 0.15s; margin-right: 4px;
+  }
+  .action-btn:hover { border-color: var(--gold); color: var(--gold); }
+
+  /* ===== SIDE PANEL ===== */
+  .deadline-card .card-header { background: var(--navy); }
+  .deadline-card .card-title { color: white; }
+  .deadline-card .card-sub { color: rgba(255,255,255,0.5); }
+
+  .deadline-list { padding: 8px 0; }
+
+  .deadline-item {
+    padding: 12px 20px;
+    border-bottom: 1px solid #F5F2EE;
+    display: flex; align-items: flex-start; gap: 12px;
+    transition: background 0.15s;
+  }
+  .deadline-item:hover { background: #FAF8F4; }
+  .deadline-item:last-child { border-bottom: none; }
+
+  .dl-bar {
+    width: 4px; border-radius: 4px; flex-shrink: 0;
+    align-self: stretch; min-height: 36px;
+  }
+  .dl-bar.urgent { background: var(--red); }
+  .dl-bar.soon { background: var(--gold); }
+  .dl-bar.ok { background: var(--green); }
+
+  .dl-info { flex: 1; }
+  .dl-name { font-size: 13px; font-weight: 600; color: var(--navy); }
+  .dl-date { font-size: 11px; color: var(--gray); margin-top: 2px; }
+  .dl-count { font-size: 11px; color: var(--gray); }
+
+  .dl-days {
+    font-size: 11px; font-weight: 700; font-family: 'IBM Plex Mono', monospace;
+    padding: 3px 8px; border-radius: 6px;
+    flex-shrink: 0;
+  }
+  .dl-days.urgent { background: #FDEEEC; color: var(--red); }
+  .dl-days.soon { background: #FEF9EC; color: #A07030; }
+  .dl-days.ok { background: #E8F5EE; color: var(--green); }
+
+  /* ===== NOTICE TICKER ===== */
+  .notice-bar {
+    background: var(--gold);
+    padding: 9px 32px;
+    display: flex; align-items: center; gap: 14px;
+    font-size: 13px;
+  }
+
+  .notice-label {
+    background: var(--navy);
+    color: var(--gold);
+    font-size: 11px; font-weight: 700;
+    padding: 2px 10px; border-radius: 4px;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+  }
+
+  .notice-text { color: var(--navy); font-weight: 500; }
+
+  /* ===== MODAL ===== */
+  .modal-overlay {
+    position: fixed; inset: 0; z-index: 200;
+    background: rgba(11,29,58,0.55);
+    backdrop-filter: blur(3px);
+    display: none; align-items: center; justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: white; border-radius: 16px;
+    width: 100%; max-width: 560px;
+    box-shadow: 0 20px 60px rgba(11,29,58,0.3);
+    overflow: hidden;
+    animation: modalIn 0.25s ease;
+  }
+
+  @keyframes modalIn {
+    from { transform: translateY(20px) scale(0.97); opacity: 0; }
+    to { transform: none; opacity: 1; }
+  }
+
+  .modal-header {
+    background: var(--navy);
+    padding: 20px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+
+  .modal-title { font-size: 16px; font-weight: 700; color: white; }
+
+  .modal-close {
+    background: rgba(255,255,255,0.1); border: none;
+    width: 30px; height: 30px; border-radius: 8px;
+    cursor: pointer; color: white; font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s;
+  }
+  .modal-close:hover { background: rgba(255,255,255,0.2); }
+
+  .modal-body { padding: 24px; }
+
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group.full { grid-column: 1 / -1; }
+
+  .form-label { font-size: 12.5px; font-weight: 600; color: var(--navy); }
+
+  .form-input {
+    padding: 9px 12px; border: 1px solid #DDD8D0;
+    border-radius: 8px; font-size: 13.5px; font-family: 'Sarabun', sans-serif;
+    color: var(--navy); transition: border-color 0.2s;
+  }
+  .form-input:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201,168,76,0.15); }
+
+  textarea.form-input { resize: vertical; min-height: 80px; }
+
+  .form-actions {
+    display: flex; gap: 10px; justify-content: flex-end;
+    margin-top: 20px; padding-top: 16px;
+    border-top: 1px solid #F0EDE6;
+  }
+
+  .btn-cancel {
+    background: none; border: 1px solid #DDD8D0;
+    padding: 9px 20px; border-radius: 8px;
+    cursor: pointer; font-size: 14px; font-family: 'Sarabun', sans-serif;
+    color: var(--gray); transition: all 0.2s;
+  }
+  .btn-cancel:hover { border-color: var(--navy); color: var(--navy); }
+
+  .btn-save {
+    background: var(--navy); color: white; border: none;
+    padding: 9px 22px; border-radius: 8px;
+    cursor: pointer; font-size: 14px; font-weight: 600;
+    font-family: 'Sarabun', sans-serif; transition: all 0.2s;
+  }
+  .btn-save:hover { background: var(--navy-light); }
+
+  /* ===== PAGINATION ===== */
+  .pagination {
+    padding: 14px 20px;
+    display: flex; align-items: center; justify-content: between;
+    border-top: 1px solid #F0EDE6;
+    background: #FAFAF8;
+    gap: 8px;
+  }
+  .page-info { font-size: 12.5px; color: var(--gray); flex: 1; }
+  .page-btn {
+    background: none; border: 1px solid #DDD8D0;
+    width: 32px; height: 32px; border-radius: 7px;
+    cursor: pointer; font-size: 13px; color: var(--navy);
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s; font-family: 'Sarabun', sans-serif;
+  }
+  .page-btn:hover { border-color: var(--gold); color: var(--gold); }
+  .page-btn.active { background: var(--navy); border-color: var(--navy); color: white; }
+
+  /* ===== RESPONSIVE TWEAK ===== */
+  @media (max-width: 1200px) {
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .grid-2 { grid-template-columns: 1fr; }
+  }
+
+  /* ===== PAGE SECTIONS ===== */
+  .page-section { display: none; }
+  .page-section.active { display: block; }
+
+  /* ===== REPORT DETAIL ===== */
+  .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+  .detail-block {
+    background: white; border-radius: var(--radius);
+    border: 1px solid #EAE5DC; padding: 20px 22px;
+  }
+  .detail-block h3 { font-size: 13px; font-weight: 700; color: var(--gold); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 14px; border-bottom: 1px solid #F0EDE6; padding-bottom: 10px; }
+  .detail-row { display: flex; gap: 10px; margin-bottom: 10px; align-items: flex-start; }
+  .detail-key { font-size: 12.5px; color: var(--gray); min-width: 120px; font-weight: 500; padding-top: 1px; }
+  .detail-val { font-size: 13.5px; color: var(--navy); font-weight: 500; flex: 1; }
+
+  /* ===== TOAST ===== */
+  .toast {
+    position: fixed; bottom: 28px; right: 28px;
+    background: var(--navy); color: white;
+    padding: 12px 20px; border-radius: 10px;
+    font-size: 13.5px; font-weight: 500;
+    display: flex; align-items: center; gap: 10px;
+    box-shadow: 0 8px 24px rgba(11,29,58,0.35);
+    z-index: 999;
+    transform: translateY(80px); opacity: 0;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    pointer-events: none;
+  }
+  .toast.show { transform: none; opacity: 1; }
+  .toast-icon { color: var(--gold); font-size: 16px; }
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <div class="college-badge">
+      <div class="badge-icon">🎓</div>
+      <div>
+        <div class="college-name">วิทยาลัยเทคนิคสุพรรณบุรี</div>
+      </div>
+    </div>
+    <div class="system-title">ระบบรายงานฝึกงาน</div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">หลัก</div>
+    <div class="nav-item active" onclick="showPage('dashboard', this)">
+      <span class="nav-icon">🏠</span> แดชบอร์ด
+    </div>
+    <div class="nav-item" onclick="showPage('reports', this)">
+      <span class="nav-icon">📋</span> รายงานฝึกงาน
+      <span class="nav-badge">12</span>
+    </div>
+    <div class="nav-item" onclick="showPage('students', this)">
+      <span class="nav-icon">👨‍🎓</span> ข้อมูลนักศึกษา
+    </div>
+    <div class="nav-item" onclick="showPage('companies', this)">
+      <span class="nav-icon">🏢</span> สถานประกอบการ
+    </div>
+
+    <div class="nav-section-label">จัดการ</div>
+    <div class="nav-item" onclick="showPage('evaluate', this)">
+      <span class="nav-icon">⭐</span> ประเมินผล
+    </div>
+    <div class="nav-item" onclick="showPage('calendar', this)">
+      <span class="nav-icon">📅</span> ปฏิทินฝึกงาน
+    </div>
+    <div class="nav-item" onclick="showPage('documents', this)">
+      <span class="nav-icon">📁</span> เอกสาร/แบบฟอร์ม
+    </div>
+
+    <div class="nav-section-label">ระบบ</div>
+    <div class="nav-item" onclick="showPage('settings', this)">
+      <span class="nav-icon">⚙️</span> ตั้งค่าระบบ
+    </div>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="user-avatar">อ</div>
+    <div class="user-info">
+      <div class="user-name">อาจารย์สมชาย ใจดี</div>
+      <div class="user-role">ครูที่ปรึกษาฝึกงาน</div>
+    </div>
+    <button class="logout-btn" onclick="showToast('ออกจากระบบแล้ว')">🚪</button>
+  </div>
+</aside>
+
+<!-- Main -->
+<main class="main">
+  <!-- Notice Bar -->
+  <div class="notice-bar">
+    <span class="notice-label">📢 ประกาศ</span>
+    <span class="notice-text">กำหนดส่งรายงานฝึกงานรอบที่ 1 วันที่ 15 พฤษภาคม 2568 — กรุณาตรวจสอบรายชื่อนักศึกษาที่ยังไม่ส่งรายงาน</span>
+  </div>
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <h1 id="page-title">แดชบอร์ดภาพรวม</h1>
+      <p id="page-sub">ภาคเรียนที่ 2/2567 • อัปเดตล่าสุด: 1 พ.ค. 2568</p>
+    </div>
+    <div class="topbar-right">
+      <button class="topbar-btn" onclick="showToast('กำลังส่งออกข้อมูล...')">📤 ส่งออก Excel</button>
+      <button class="btn-primary" onclick="openModal()">+ เพิ่มรายงานใหม่</button>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div class="content">
+
+    <!-- ===== DASHBOARD PAGE ===== -->
+    <div class="page-section active" id="page-dashboard">
+
+      <div class="stats-grid">
+        <div class="stat-card blue" onclick="showPage('students', document.querySelector('[onclick*=students]'))">
+          <div class="stat-label">นักศึกษาทั้งหมด</div>
+          <div class="stat-value">248</div>
+          <div class="stat-sub">ฝึกงานอยู่ <span>234 คน</span></div>
+          <div class="stat-icon">👨‍🎓</div>
+        </div>
+        <div class="stat-card gold">
+          <div class="stat-label">ส่งรายงานแล้ว</div>
+          <div class="stat-value">189</div>
+          <div class="stat-sub">คิดเป็น <span>76.2%</span></div>
+          <div class="stat-icon">📋</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-label">ผ่านการประเมิน</div>
+          <div class="stat-value">162</div>
+          <div class="stat-sub">รออนุมัติ <span>27 คน</span></div>
+          <div class="stat-icon">✅</div>
+        </div>
+        <div class="stat-card red">
+          <div class="stat-label">ยังไม่ส่งรายงาน</div>
+          <div class="stat-value">59</div>
+          <div class="stat-sub">เกินกำหนด <span style="color:var(--red)">12 คน</span></div>
+          <div class="stat-icon">⚠️</div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <!-- Recent Reports Table -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">รายงานล่าสุด</div>
+              <div class="card-sub">การส่งรายงานในช่วง 7 วันที่ผ่านมา</div>
+            </div>
+            <button class="action-btn" onclick="showPage('reports', document.querySelector('[onclick*=reports]'))">ดูทั้งหมด →</button>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>นักศึกษา</th>
+                <th>สัปดาห์ที่</th>
+                <th>สถานที่</th>
+                <th>สถานะ</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><div class="student-cell"><div class="s-avatar">ก</div><div><div class="s-name">กมลชนก เจริญสุข</div><div class="s-id">66-5-01234-01</div></div></div></td>
+                <td>สัปดาห์ที่ 8</td>
+                <td>บ. ช.การช่าง จำกัด</td>
+                <td><span class="status-badge submitted"><span class="status-dot"></span>ส่งแล้ว</span></td>
+                <td><button class="action-btn" onclick="openReportDetail()">ดู</button></td>
+              </tr>
+              <tr>
+                <td><div class="student-cell"><div class="s-avatar">ป</div><div><div class="s-name">ประสิทธิ์ มานะงาน</div><div class="s-id">66-5-01235-01</div></div></div></td>
+                <td>สัปดาห์ที่ 8</td>
+                <td>บ. เอ็กซ์เพรส เซอร์วิส</td>
+                <td><span class="status-badge approved"><span class="status-dot"></span>อนุมัติแล้ว</span></td>
+                <td><button class="action-btn" onclick="openReportDetail()">ดู</button></td>
+              </tr>
+              <tr>
+                <td><div class="student-cell"><div class="s-avatar">ส</div><div><div class="s-name">สุดารัตน์ ทองดี</div><div class="s-id">66-5-01236-01</div></div></div></td>
+                <td>สัปดาห์ที่ 7</td>
+                <td>ร้าน IT สุพรรณ</td>
+                <td><span class="status-badge pending"><span class="status-dot"></span>รอตรวจ</span></td>
+                <td><button class="action-btn" onclick="openReportDetail()">ดู</button></td>
+              </tr>
+              <tr>
+                <td><div class="student-cell"><div class="s-avatar">ว</div><div><div class="s-name">วีระชัย แก้วใส</div><div class="s-id">66-5-01237-01</div></div></div></td>
+                <td>สัปดาห์ที่ 6</td>
+                <td>บ. ไทยรุ่งเรือง จำกัด</td>
+                <td><span class="status-badge late"><span class="status-dot"></span>ส่งช้า</span></td>
+                <td><button class="action-btn" onclick="openReportDetail()">ดู</button></td>
+              </tr>
+              <tr>
+                <td><div class="student-cell"><div class="s-avatar">น</div><div><div class="s-name">นัทธมน พรมศิริ</div><div class="s-id">66-5-01238-01</div></div></div></td>
+                <td>สัปดาห์ที่ 8</td>
+                <td>โรงพยาบาลสุพรรณบุรี</td>
+                <td><span class="status-badge submitted"><span class="status-dot"></span>ส่งแล้ว</span></td>
+                <td><button class="action-btn" onclick="openReportDetail()">ดู</button></td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="pagination">
+            <span class="page-info">แสดง 5 จาก 189 รายการ</span>
+            <button class="page-btn">‹</button>
+            <button class="page-btn active">1</button>
+            <button class="page-btn">2</button>
+            <button class="page-btn">3</button>
+            <button class="page-btn">›</button>
+          </div>
+        </div>
+
+        <!-- Deadlines -->
+        <div class="card deadline-card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">กำหนดส่งรายงาน</div>
+              <div class="card-sub">ภาคเรียน 2/2567</div>
+            </div>
+          </div>
+          <div class="deadline-list">
+            <div class="deadline-item">
+              <div class="dl-bar urgent"></div>
+              <div class="dl-info">
+                <div class="dl-name">รายงานรอบที่ 1</div>
+                <div class="dl-date">15 พฤษภาคม 2568</div>
+                <div class="dl-count">ยังไม่ส่ง 27 คน</div>
+              </div>
+              <span class="dl-days urgent">2 วัน</span>
+            </div>
+            <div class="deadline-item">
+              <div class="dl-bar soon"></div>
+              <div class="dl-info">
+                <div class="dl-name">รายงานรอบที่ 2</div>
+                <div class="dl-date">30 พฤษภาคม 2568</div>
+                <div class="dl-count">ยังไม่ส่ง 189 คน</div>
+              </div>
+              <span class="dl-days soon">17 วัน</span>
+            </div>
+            <div class="deadline-item">
+              <div class="dl-bar ok"></div>
+              <div class="dl-info">
+                <div class="dl-name">รายงานสรุปสิ้นสุด</div>
+                <div class="dl-date">15 มิถุนายน 2568</div>
+                <div class="dl-count">ยังไม่ส่ง 248 คน</div>
+              </div>
+              <span class="dl-days ok">34 วัน</span>
+            </div>
+            <div class="deadline-item">
+              <div class="dl-bar ok"></div>
+              <div class="dl-info">
+                <div class="dl-name">นำเสนอผลการฝึกงาน</div>
+                <div class="dl-date">25 มิถุนายน 2568</div>
+                <div class="dl-count">นักศึกษาทั้งหมด 248 คน</div>
+              </div>
+              <span class="dl-days ok">44 วัน</span>
+            </div>
+            <div class="deadline-item" style="border:none">
+              <div class="dl-bar ok"></div>
+              <div class="dl-info">
+                <div class="dl-name">ส่งเกรดฝึกงาน</div>
+                <div class="dl-date">30 มิถุนายน 2568</div>
+                <div class="dl-count">ครูที่ปรึกษาทุกท่าน</div>
+              </div>
+              <span class="dl-days ok">49 วัน</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== REPORTS PAGE ===== -->
+    <div class="page-section" id="page-reports">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">รายงานฝึกงานทั้งหมด</div>
+            <div class="card-sub">ภาคเรียนที่ 2/2567 — 248 นักศึกษา</div>
+          </div>
+          <button class="btn-primary" onclick="openModal()">+ เพิ่มรายงาน</button>
+        </div>
+        <div class="filter-row">
+          <div class="search-wrap">
+            <span class="search-icon">🔍</span>
+            <input type="text" placeholder="ค้นหาชื่อนักศึกษา รหัส หรือสถานที่ฝึกงาน...">
+          </div>
+          <select>
+            <option>สถานะทั้งหมด</option>
+            <option>ส่งแล้ว</option>
+            <option>รอตรวจ</option>
+            <option>อนุมัติแล้ว</option>
+            <option>ส่งช้า</option>
+            <option>ยังไม่ส่ง</option>
+          </select>
+          <select>
+            <option>ทุกสาขา</option>
+            <option>ช่างยนต์</option>
+            <option>ช่างไฟฟ้า</option>
+            <option>ช่างอิเล็กทรอนิกส์</option>
+            <option>การบัญชี</option>
+            <option>คอมพิวเตอร์ธุรกิจ</option>
+          </select>
+          <select>
+            <option>สัปดาห์ทั้งหมด</option>
+            <option>สัปดาห์ที่ 1</option>
+            <option>สัปดาห์ที่ 2</option>
+            <option>สัปดาห์ที่ 8</option>
+          </select>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>นักศึกษา</th>
+              <th>สาขา</th>
+              <th>สถานประกอบการ</th>
+              <th>สัปดาห์ที่</th>
+              <th>วันที่ส่ง</th>
+              <th>สถานะ</th>
+              <th>การดำเนินการ</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="color:var(--gray);font-size:12px;font-family:'IBM Plex Mono',monospace">001</td>
+              <td><div class="student-cell"><div class="s-avatar">ก</div><div><div class="s-name">กมลชนก เจริญสุข</div><div class="s-id">66-5-01234-01</div></div></div></td>
+              <td>ช่างไฟฟ้า</td>
+              <td>บ. ช.การช่าง จำกัด</td>
+              <td>สัปดาห์ที่ 8</td>
+              <td>29 เม.ย. 2568</td>
+              <td><span class="status-badge submitted"><span class="status-dot"></span>ส่งแล้ว</span></td>
+              <td><button class="action-btn" onclick="openReportDetail()">👁 ดู</button><button class="action-btn" onclick="showToast('บันทึกเรียบร้อย')">✓ อนุมัติ</button></td>
+            </tr>
+            <tr>
+              <td style="color:var(--gray);font-size:12px;font-family:'IBM Plex Mono',monospace">002</td>
+              <td><div class="student-cell"><div class="s-avatar">ป</div><div><div class="s-name">ประสิทธิ์ มานะงาน</div><div class="s-id">66-5-01235-01</div></div></div></td>
+              <td>ช่างยนต์</td>
+              <td>บ. เอ็กซ์เพรส เซอร์วิส</td>
+              <td>สัปดาห์ที่ 8</td>
+              <td>28 เม.ย. 2568</td>
+              <td><span class="status-badge approved"><span class="status-dot"></span>อนุมัติแล้ว</span></td>
+              <td><button class="action-btn" onclick="openReportDetail()">👁 ดู</button></td>
+            </tr>
+            <tr>
+              <td style="color:var(--gray);font-size:12px;font-family:'IBM Plex Mono',monospace">003</td>
+              <td><div class="student-cell"><div class="s-avatar">ส</div><div><div class="s-name">สุดารัตน์ ทองดี</div><div class="s-id">66-5-01236-01</div></div></div></td>
+              <td>คอมพิวเตอร์ธุรกิจ</td>
+              <td>ร้าน IT สุพรรณ</td>
+              <td>สัปดาห์ที่ 7</td>
+              <td>27 เม.ย. 2568</td>
+              <td><span class="status-badge pending"><span class="status-dot"></span>รอตรวจ</span></td>
+              <td><button class="action-btn" onclick="openReportDetail()">👁 ดู</button><button class="action-btn" onclick="showToast('บันทึกเรียบร้อย')">✓ อนุมัติ</button></td>
+            </tr>
+            <tr>
+              <td style="color:var(--gray);font-size:12px;font-family:'IBM Plex Mono',monospace">004</td>
+              <td><div class="student-cell"><div class="s-avatar">ว</div><div><div class="s-name">วีระชัย แก้วใส</div><div class="s-id">66-5-01237-01</div></div></div></td>
+              <td>ช่างอิเล็กทรอนิกส์</td>
+              <td>บ. ไทยรุ่งเรือง จำกัด</td>
+              <td>สัปดาห์ที่ 6</td>
+              <td>20 เม.ย. 2568</td>
+              <td><span class="status-badge late"><span class="status-dot"></span>ส่งช้า</span></td>
+              <td><button class="action-btn" onclick="openReportDetail()">👁 ดู</button><button class="action-btn" onclick="showToast('บันทึกเรียบร้อย')">✓ อนุมัติ</button></td>
+            </tr>
+            <tr>
+              <td style="color:var(--gray);font-size:12px;font-family:'IBM Plex Mono',monospace">005</td>
+              <td><div class="student-cell"><div class="s-avatar">น</div><div><div class="s-name">นัทธมน พรมศิริ</div><div class="s-id">66-5-01238-01</div></div></div></td>
+              <td>การบัญชี</td>
+              <td>โรงพยาบาลสุพรรณบุรี</td>
+              <td>สัปดาห์ที่ 8</td>
+              <td>30 เม.ย. 2568</td>
+              <td><span class="status-badge submitted"><span class="status-dot"></span>ส่งแล้ว</span></td>
+              <td><button class="action-btn" onclick="openReportDetail()">👁 ดู</button><button class="action-btn" onclick="showToast('บันทึกเรียบร้อย')">✓ อนุมัติ</button></td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="pagination">
+          <span class="page-info">แสดง 1-5 จาก 189 รายการ</span>
+          <button class="page-btn">‹</button>
+          <button class="page-btn active">1</button>
+          <button class="page-btn">2</button>
+          <button class="page-btn">3</button>
+          <button class="page-btn">···</button>
+          <button class="page-btn">38</button>
+          <button class="page-btn">›</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== STUDENTS PAGE ===== -->
+    <div class="page-section" id="page-students">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">ข้อมูลนักศึกษาฝึกงาน</div>
+            <div class="card-sub">ภาคเรียนที่ 2/2567 — 248 คน</div>
+          </div>
+          <button class="btn-primary" onclick="showToast('เพิ่มนักศึกษา')">+ เพิ่มนักศึกษา</button>
+        </div>
+        <div class="filter-row">
+          <div class="search-wrap">
+            <span class="search-icon">🔍</span>
+            <input type="text" placeholder="ค้นหาชื่อหรือรหัสนักศึกษา...">
+          </div>
+          <select>
+            <option>ทุกสาขา</option>
+            <option>ช่างยนต์</option>
+            <option>ช่างไฟฟ้า</option>
+            <option>ช่างอิเล็กทรอนิกส์</option>
+            <option>การบัญชี</option>
+            <option>คอมพิวเตอร์ธุรกิจ</option>
+          </select>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>นักศึกษา</th>
+              <th>สาขา</th>
+              <th>สถานประกอบการ</th>
+              <th>ครูที่ปรึกษา</th>
+              <th>รายงานที่ส่ง</th>
+              <th>สถานะ</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><div class="student-cell"><div class="s-avatar">ก</div><div><div class="s-name">กมลชนก เจริญสุข</div><div class="s-id">66-5-01234-01</div></div></div></td>
+              <td>ช่างไฟฟ้า</td>
+              <td>บ. ช.การช่าง จำกัด</td>
+              <td>อ.สมชาย ใจดี</td>
+              <td><span style="font-family:'IBM Plex Mono',monospace;font-size:13px">8 / 16</span></td>
+              <td><span class="status-badge submitted"><span class="status-dot"></span>กำลังฝึก</span></td>
+            </tr>
+            <tr>
+              <td><div class="student-cell"><div class="s-avatar">ป</div><div><div class="s-name">ประสิทธิ์ มานะงาน</div><div class="s-id">66-5-01235-01</div></div></div></td>
+              <td>ช่างยนต์</td>
+              <td>บ. เอ็กซ์เพรส เซอร์วิส</td>
+              <td>อ.สมชาย ใจดี</td>
+              <td><span style="font-family:'IBM Plex Mono',monospace;font-size:13px">8 / 16</span></td>
+              <td><span class="status-badge approved"><span class="status-dot"></span>กำลังฝึก</span></td>
+            </tr>
+            <tr>
+              <td><div class="student-cell"><div class="s-avatar">ส</div><div><div class="s-name">สุดารัตน์ ทองดี</div><div class="s-id">66-5-01236-01</div></div></div></td>
+              <td>คอมพิวเตอร์ธุรกิจ</td>
+              <td>ร้าน IT สุพรรณ</td>
+              <td>อ.วิมล รักการงาน</td>
+              <td><span style="font-family:'IBM Plex Mono',monospace;font-size:13px">7 / 16</span></td>
+              <td><span class="status-badge pending"><span class="status-dot"></span>กำลังฝึก</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===== COMPANIES PAGE ===== -->
+    <div class="page-section" id="page-companies">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">สถานประกอบการ</div>
+            <div class="card-sub">รายชื่อสถานที่รับนักศึกษาฝึกงาน</div>
+          </div>
+          <button class="btn-primary" onclick="showToast('เพิ่มสถานประกอบการ')">+ เพิ่มสถานประกอบการ</button>
+        </div>
+        <table>
+          <thead>
+            <tr><th>ชื่อสถานประกอบการ</th><th>ประเภท</th><th>ที่อยู่</th><th>ผู้ประสานงาน</th><th>นักศึกษา</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>บ. ช.การช่าง จำกัด</strong></td>
+              <td>อุตสาหกรรม</td>
+              <td>อ.เมือง สุพรรณบุรี</td>
+              <td>คุณสมศักดิ์ ดีงาม</td>
+              <td>12 คน</td>
+            </tr>
+            <tr>
+              <td><strong>โรงพยาบาลสุพรรณบุรี</strong></td>
+              <td>สาธารณสุข</td>
+              <td>อ.เมือง สุพรรณบุรี</td>
+              <td>คุณนงนุช สุขใจ</td>
+              <td>8 คน</td>
+            </tr>
+            <tr>
+              <td><strong>ร้าน IT สุพรรณ</strong></td>
+              <td>เทคโนโลยี</td>
+              <td>อ.เมือง สุพรรณบุรี</td>
+              <td>คุณเอกชัย ก้าวหน้า</td>
+              <td>5 คน</td>
+            </tr>
+            <tr>
+              <td><strong>บ. ไทยรุ่งเรือง จำกัด</strong></td>
+              <td>การผลิต</td>
+              <td>อ.สองพี่น้อง สุพรรณบุรี</td>
+              <td>คุณสุภาพ มั่นคง</td>
+              <td>15 คน</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===== OTHER PAGES ===== -->
+    <div class="page-section" id="page-evaluate">
+      <div class="card" style="padding:40px;text-align:center">
+        <div style="font-size:48px;margin-bottom:16px">⭐</div>
+        <div style="font-size:18px;font-weight:700;color:var(--navy);margin-bottom:8px">ระบบประเมินผล</div>
+        <div style="color:var(--gray)">กำลังพัฒนาโมดูลประเมินผลการฝึกงาน</div>
+      </div>
+    </div>
+    <div class="page-section" id="page-calendar">
+      <div class="card" style="padding:40px;text-align:center">
+        <div style="font-size:48px;margin-bottom:16px">📅</div>
+        <div style="font-size:18px;font-weight:700;color:var(--navy);margin-bottom:8px">ปฏิทินฝึกงาน</div>
+        <div style="color:var(--gray)">กำลังพัฒนาปฏิทินการฝึกงานและกำหนดการ</div>
+      </div>
+    </div>
+    <div class="page-section" id="page-documents">
+      <div class="card" style="padding:40px;text-align:center">
+        <div style="font-size:48px;margin-bottom:16px">📁</div>
+        <div style="font-size:18px;font-weight:700;color:var(--navy);margin-bottom:8px">เอกสารและแบบฟอร์ม</div>
+        <div style="color:var(--gray)">ดาวน์โหลดแบบฟอร์มและเอกสารที่เกี่ยวข้อง</div>
+      </div>
+    </div>
+    <div class="page-section" id="page-settings">
+      <div class="card" style="padding:40px;text-align:center">
+        <div style="font-size:48px;margin-bottom:16px">⚙️</div>
+        <div style="font-size:18px;font-weight:700;color:var(--navy);margin-bottom:8px">ตั้งค่าระบบ</div>
+        <div style="color:var(--gray)">จัดการการตั้งค่าระบบรายงานฝึกงาน</div>
+      </div>
+    </div>
+
+  </div><!-- end content -->
+</main>
+
+<!-- Add Report Modal -->
+<div class="modal-overlay" id="modal-add">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">เพิ่มรายงานฝึกงานใหม่</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group full">
+          <label class="form-label">นักศึกษา</label>
+          <select class="form-input">
+            <option>-- เลือกนักศึกษา --</option>
+            <option>66-5-01234-01 กมลชนก เจริญสุข</option>
+            <option>66-5-01235-01 ประสิทธิ์ มานะงาน</option>
+            <option>66-5-01236-01 สุดารัตน์ ทองดี</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">สัปดาห์ที่</label>
+          <select class="form-input">
+            <option>สัปดาห์ที่ 1</option><option>สัปดาห์ที่ 2</option>
+            <option>สัปดาห์ที่ 8</option><option>สัปดาห์ที่ 9</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">วันที่ส่ง</label>
+          <input type="date" class="form-input" value="2025-05-01">
+        </div>
+        <div class="form-group full">
+          <label class="form-label">สถานประกอบการ</label>
+          <select class="form-input">
+            <option>-- เลือกสถานประกอบการ --</option>
+            <option>บ. ช.การช่าง จำกัด</option>
+            <option>โรงพยาบาลสุพรรณบุรี</option>
+            <option>ร้าน IT สุพรรณ</option>
+          </select>
+        </div>
+        <div class="form-group full">
+          <label class="form-label">งานที่ปฏิบัติในสัปดาห์นี้</label>
+          <textarea class="form-input" placeholder="อธิบายงานที่ได้รับมอบหมายและปฏิบัติในสัปดาห์นี้..."></textarea>
+        </div>
+        <div class="form-group full">
+          <label class="form-label">ปัญหาและการแก้ไข</label>
+          <textarea class="form-input" placeholder="ปัญหาที่พบและวิธีแก้ไข..."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">สถานะ</label>
+          <select class="form-input">
+            <option>รอตรวจ</option>
+            <option>อนุมัติแล้ว</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">ไฟล์แนบ</label>
+          <input type="file" class="form-input" accept=".pdf,.docx,.jpg">
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn-cancel" onclick="closeModal()">ยกเลิก</button>
+        <button class="btn-save" onclick="saveReport()">💾 บันทึกรายงาน</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Report Detail Modal -->
+<div class="modal-overlay" id="modal-detail">
+  <div class="modal" style="max-width:640px">
+    <div class="modal-header">
+      <div class="modal-title">รายงานฝึกงาน — กมลชนก เจริญสุข</div>
+      <button class="modal-close" onclick="closeDetailModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+        <div style="background:#F7F4EF;border-radius:8px;padding:14px">
+          <div style="font-size:11px;color:var(--gray);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">ข้อมูลนักศึกษา</div>
+          <div style="font-size:14px;font-weight:700;color:var(--navy)">กมลชนก เจริญสุข</div>
+          <div style="font-size:12px;color:var(--gray);font-family:'IBM Plex Mono',monospace">66-5-01234-01</div>
+          <div style="font-size:12.5px;color:var(--navy);margin-top:4px">สาขาช่างไฟฟ้า</div>
+        </div>
+        <div style="background:#F7F4EF;border-radius:8px;padding:14px">
+          <div style="font-size:11px;color:var(--gray);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">สถานประกอบการ</div>
+          <div style="font-size:14px;font-weight:700;color:var(--navy)">บ. ช.การช่าง จำกัด</div>
+          <div style="font-size:12.5px;color:var(--navy)">สัปดาห์ที่ 8 • ส่ง 29 เม.ย. 2568</div>
+          <span class="status-badge submitted" style="margin-top:6px;display:inline-flex"><span class="status-dot"></span>ส่งแล้ว</span>
+        </div>
+      </div>
+      <div style="margin-bottom:14px">
+        <div style="font-size:12.5px;font-weight:700;color:var(--navy);margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #EEE">งานที่ปฏิบัติในสัปดาห์นี้</div>
+        <p style="font-size:13.5px;line-height:1.7;color:#334">ปฏิบัติงานตรวจซ่อมและบำรุงรักษาระบบไฟฟ้าในโรงงาน ตรวจสอบสายไฟฟ้าแรงสูงและเปลี่ยนอุปกรณ์ป้องกันกระแสเกิน เข้าร่วมการซ่อมบำรุงเครื่องจักรประจำสัปดาห์ และบันทึกผลการตรวจสอบในระบบ CMMS</p>
+      </div>
+      <div style="margin-bottom:14px">
+        <div style="font-size:12.5px;font-weight:700;color:var(--navy);margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #EEE">ปัญหาและการแก้ไข</div>
+        <p style="font-size:13.5px;line-height:1.7;color:#334">พบปัญหาการลัดวงจรในแผงจ่ายไฟย่อย แก้ไขโดยทดสอบด้วยมัลติมิเตอร์และเปลี่ยนฟิวส์ที่เสื่อมสภาพ พร้อมรายงานต่อหัวหน้าฝ่าย</p>
+      </div>
+      <div class="form-actions">
+        <button class="btn-cancel" onclick="closeDetailModal()">ปิด</button>
+        <button class="topbar-btn" onclick="showToast('ดาวน์โหลด PDF')">📄 ดาวน์โหลด PDF</button>
+        <button class="btn-save" onclick="approveReport()">✓ อนุมัติรายงาน</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <span class="toast-icon">✓</span>
+  <span id="toast-msg">บันทึกเรียบร้อยแล้ว</span>
+</div>
+
+<script>
+  function showPage(id, el) {
+    document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById('page-' + id).classList.add('active');
+    if (el) el.classList.add('active');
+    const titles = {
+      dashboard: ['แดชบอร์ดภาพรวม', 'ภาคเรียนที่ 2/2567 • อัปเดตล่าสุด: 1 พ.ค. 2568'],
+      reports: ['รายงานฝึกงานทั้งหมด', 'จัดการและติดตามการส่งรายงาน'],
+      students: ['ข้อมูลนักศึกษาฝึกงาน', 'รายชื่อนักศึกษาและข้อมูลการฝึกงาน'],
+      companies: ['สถานประกอบการ', 'รายชื่อสถานที่รับนักศึกษาฝึกงาน'],
+      evaluate: ['ระบบประเมินผล', 'ประเมินผลการฝึกงาน'],
+      calendar: ['ปฏิทินฝึกงาน', 'กำหนดการและปฏิทิน'],
+      documents: ['เอกสารและแบบฟอร์ม', 'ดาวน์โหลดแบบฟอร์ม'],
+      settings: ['ตั้งค่าระบบ', 'ตั้งค่าการใช้งาน'],
+    };
+    if (titles[id]) {
+      document.getElementById('page-title').textContent = titles[id][0];
+      document.getElementById('page-sub').textContent = titles[id][1];
+    }
+  }
+
+  function openModal() {
+    document.getElementById('modal-add').classList.add('open');
+  }
+  function closeModal() {
+    document.getElementById('modal-add').classList.remove('open');
+  }
+  function openReportDetail() {
+    document.getElementById('modal-detail').classList.add('open');
+  }
+  function closeDetailModal() {
+    document.getElementById('modal-detail').classList.remove('open');
+  }
+
+  function saveReport() {
+    closeModal();
+    showToast('บันทึกรายงานเรียบร้อยแล้ว');
+  }
+  function approveReport() {
+    closeDetailModal();
+    showToast('อนุมัติรายงานเรียบร้อยแล้ว');
+  }
+
+  let toastTimer;
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    document.getElementById('toast-msg').textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+  }
+
+  // Close modals on overlay click
+  document.querySelectorAll('.modal-overlay').forEach(o => {
+    o.addEventListener('click', e => {
+      if (e.target === o) o.classList.remove('open');
+    });
+  });
+</script>
+</body>
+</html>
