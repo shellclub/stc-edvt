@@ -71,7 +71,7 @@ $query = mysqli_query($conn, $sql);
                                 <?php echo dateThai($row['report_date']); ?>
                             </div>
                             <small class="text-muted" style="font-size: 0.7rem;">
-                                บันทึกเมื่อ: <?php echo dateTimeThai($row['reported_at']); ?>
+                                บันทึกเมื่อ: <?php echo dateTimeThai($row['created_at']); ?>
                             </small>
                         </div>
 

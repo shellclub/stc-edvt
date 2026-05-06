@@ -156,7 +156,7 @@ function monthThaiName($monthKey) {
                                                     <?php echo $is_on_time ? 'ตรงวัน' : 'ย้อนหลัง'; ?>
                                                 </span>
                                                 <div class="text-muted mt-1" style="font-size: 0.7rem;">
-                                                    บันทึก: <?php echo dateThai($data['reported_at'], true); ?>
+                                                    บันทึก: <?php echo dateThai($data['created_at'], true); ?>
                                                 </div>
                                             </div>
                                         </td>
