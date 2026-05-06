@@ -11,6 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $lat = mysqli_real_escape_string($conn, $_POST['lat']);
     $lng = mysqli_real_escape_string($conn, $_POST['lng']);
 
+    $created_at = date('Y-m-d H:i:s');
     // 1. ตรวจสอบรายงานย้อนหลังไม่เกิน 30 วัน
     $today = new DateTime();
     $target_date = new DateTime($date);
@@ -37,11 +38,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 
     // 4. บันทึกข้อมูล
-    $sql = "INSERT INTO internship_reports (student_id, report_date, job_details, problems, report_image, location_lat, location_lng) 
-            VALUES ('$sid', '$date', '$job', '$prob', '$filename', '$lat', '$lng')";
+    $sql = "INSERT INTO internship_reports (student_id, report_date, job_details, problems, report_image, location_lat, location_lng, created_at) 
+            VALUES ('$sid', '$date', '$job', '$prob', '$filename', '$lat', '$lng', '$created_at')";
 
     if (mysqli_query($conn, $sql)) {
-        echo "<script>alert('บันทึกสำเร็จ!'); window.location.href='dashboard.php';</script>";
+        echo "<script>alert('บันทึกสำเร็จเวลา: " . date('H:i') . " น.'); window.location.href='dashboard.php';</script>";
     } else {
         echo "Error: " . mysqli_error($conn);
     }
