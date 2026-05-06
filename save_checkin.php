@@ -1,46 +1,56 @@
 <?php
+date_default_timezone_set('Asia/Bangkok'); 
 session_start();
 include "config.php";
 
-// รับค่าจาก Fetch API
-$input = json_decode(file_get_contents('php://input'), true);
+if (!isset($_SESSION['student_id'])) {
+    echo json_encode(['status' => 'error', 'message' => 'Session หมดอายุ']);
+    exit();
+}
 
-if (isset($_SESSION['student_id']) && $input) {
-    $sid = $_SESSION['student_id'];
-    $dir = 'logs';
+$sid = $_SESSION['student_id'];
+$data = json_decode(file_get_contents('php://input'), true);
 
-    // สร้างโฟลเดอร์ logs ถ้ายังไม่มี
-    if (!is_dir($dir)) {
-        mkdir($dir, 0777, true);
-    }
-
-    $filename = $dir . "/checkin_" . $sid . ".json";
+if ($data) {
+    $type = $data['type']; 
+    $lat = $data['lat'];
+    $lng = $data['lng'];
     $today = date('Y-m-d');
+    $time = date('H:i:s');
+
+    $log_dir = "logs";
+    if (!is_dir($log_dir)) { mkdir($log_dir, 0777, true); }
     
-    $log_data = [];
-    if (file_exists($filename)) {
-        $log_data = json_decode(file_get_contents($filename), true);
+    $log_file = $log_dir . "/checkin_" . $sid . ".json";
+    
+    $records = [];
+    if (file_exists($log_file)) {
+        $records = json_decode(file_get_contents($log_file), true);
     }
 
-    $new_entry = [
-        'time' => date('H:i:s'),
-        'lat' => $input['lat'],
-        'lng' => $input['lng']
+    $type_key = ($type == 'in') ? 'check_in' : 'check_out';
+    $type_name = ($type == 'in') ? 'เข้างาน' : 'เลิกงาน';
+
+    // --- ส่วนที่เพิ่ม: เช็คว่าบันทึกไปแล้วหรือยัง ---
+    if (isset($records[$today][$type_key])) {
+        echo json_encode([
+            'status' => 'warning', 
+            'message' => "คุณได้บันทึกเวลา $type_name ของวันนี้ไปแล้วเมื่อเวลา " . substr($records[$today][$type_key]['time'], 0, 5) . " น."
+        ]);
+        exit();
+    }
+    // ---------------------------------------
+
+    $records[$today][$type_key] = [
+        'time' => $time,
+        'lat' => $lat,
+        'lng' => $lng
     ];
 
-    if ($input['type'] == 'in') {
-        $log_data[$today]['check_in'] = $new_entry;
-        $msg = "ลงเวลาเข้างานสำเร็จ";
+    if (file_put_contents($log_file, json_encode($records, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT))) {
+        echo json_encode(['status' => 'success', 'message' => "บันทึกเวลา $type_name เรียบร้อยที่เวลา $time น."]);
     } else {
-        $log_data[$today]['check_out'] = $new_entry;
-        $msg = "ลงเวลาเลิกงานสำเร็จ";
-    }
-
-    // บันทึกไฟล์
-    if (file_put_contents($filename, json_encode($log_data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT))) {
-        echo json_encode(['status' => 'success', 'message' => $msg]);
-    } else {
-        echo json_encode(['status' => 'error', 'message' => 'ไม่สามารถเขียนไฟล์ได้ ตรวจสอบสิทธิ์ Folder']);
+        echo json_encode(['status' => 'error', 'message' => 'ไม่สามารถเขียนไฟล์ได้']);
     }
 }
 ?>
