@@ -124,15 +124,17 @@ $user = mysqli_fetch_array($query);
             }
         }
         window.onload = () => {
-            getGps();
-            const dateInput = document.getElementById('report_date');
-            const now = new Date();
-            const lastMonth = new Date(); lastMonth.setDate(now.getDate() - 30);
-            dateInput.max = now.toISOString().split('T')[0];
-            dateInput.min = lastMonth.toISOString().split('T')[0];
-            dateInput.value = dateInput.max;
-        };
-
+    getGps();
+    const dateInput = document.getElementById('report_date');
+    const now = new Date();
+    
+    // บังคับให้วันที่เป็นวันที่ปัจจุบันของเครื่อง โดยอิงปี ค.ศ.
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    
+    dateInput.value = `${year}-${month}-${day}`; // จัดฟอร์แมตให้เป๊ะ YYYY-MM-DD
+};
         // ส่งข้อมูลแบบ Fetch
         document.getElementById('reportForm').onsubmit = function(e) {
             e.preventDefault();
