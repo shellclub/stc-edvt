@@ -176,7 +176,16 @@
                     <i class="bi bi-box-arrow-in-right me-2"></i> เข้าสู่ระบบ
                 </button>
             </form>
-
+                <a href="EDVT-STC.pdf" target="_blank" class="btn btn-outline-secondary w-100 mt-3 kanit shadow-sm" 
+   style="border-radius: 12px; padding: 10px; border: 1px dashed #d4af37; color: #b8860b; background: #fffdf5;">
+    <div class="d-flex align-items-center justify-content-center">
+        <i class="bi bi-book-half me-2 fs-5"></i>
+        <div class="text-start">
+            <div class="fw-bold" style="font-size: 0.85rem; line-height: 1;">คู่มือการใช้งานระบบ</div>
+            <small style="font-size: 0.7rem; opacity: 0.8;">คลิกเพื่อเปิดไฟล์เอกสาร PDF</small>
+        </div>
+    </div>
+</a>
             <div class="footer-text">
                 <div class="fw-bold mb-1">แผนกอิเล็กทรอนิกส์</div>
                 © 2026 Suphanburi Technical College
