@@ -13,11 +13,11 @@ services:
       DB_PASSWORD: ${MYSQL_ROOT_PASSWORD:-technicalsuphanburi2023!!!}
       DB_NAME: edvtstc
     networks:
-      - stc-admission_default
+      - stc-admission_stc-network
     volumes:
       - ./uploads:/var/www/html/uploads
       - ./logs:/var/www/html/logs
 
 networks:
-  stc-admission_default:
+  stc-admission_stc-network:
     external: true
