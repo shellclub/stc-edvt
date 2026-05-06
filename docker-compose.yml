@@ -1,0 +1,23 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: stc-edvt-web
+    restart: unless-stopped
+    ports:
+      - "8086:80"
+    environment:
+      DB_HOST: stc-admission-db
+      DB_USER: root
+      DB_PASSWORD: ${MYSQL_ROOT_PASSWORD:-technicalsuphanburi2023!!!}
+      DB_NAME: edvtstc
+    networks:
+      - stc-admission_default
+    volumes:
+      - ./uploads:/var/www/html/uploads
+      - ./logs:/var/www/html/logs
+
+networks:
+  stc-admission_default:
+    external: true
