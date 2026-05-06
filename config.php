@@ -1,9 +1,9 @@
 <?php
-// ตั้งค่าตัวแปรเชื่อมต่อ
-$hostname = "localhost";
-$username = "root";
-$password = "";
-$dbname   = "edvtstc"; // ชื่อฐานข้อมูลของคุณ
+// ตั้งค่าตัวแปรเชื่อมต่อ (รองรับ Docker + Local)
+$hostname = getenv('DB_HOST') ?: "localhost";
+$username = getenv('DB_USER') ?: "root";
+$password = getenv('DB_PASSWORD') ?: "";
+$dbname   = getenv('DB_NAME') ?: "edvtstc"; // ชื่อฐานข้อมูลของคุณ
 
 // สร้างการเชื่อมต่อ
 $conn = mysqli_connect($hostname, $username, $password, $dbname);
