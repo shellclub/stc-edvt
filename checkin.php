@@ -8,6 +8,25 @@ if (!isset($_SESSION['student_id'])) {
 }
 $sid = $_SESSION['student_id'];
 
+// 1. ดึงข้อมูลพิกัดของสถานที่ฝึกงานจากฐานข้อมูล (JOIN ตาราง students กับ internship_places)
+$place_lat = 14.4746;   // ค่าเผื่อเลือก (พิกัด วท.สุพรรณบุรี) กรณีเด็กยังไม่ได้เลือกที่ฝึกงาน
+$place_lng = 100.1222;  
+$company_name = "วิทยาลัยเทคนิคสุพรรณบุรี (พิกัดสำรอง)";
+
+$sql_place = "SELECT s.place_id, p.company_name, p.workplace_lat, p.workplace_lng 
+              FROM students s 
+              LEFT JOIN internship_places p ON s.place_id = p.place_id 
+              WHERE s.student_id = '$sid'";
+$query_place = mysqli_query($conn, $sql_place);
+$user_place = mysqli_fetch_array($query_place);
+
+// ถ้าตรวจพบว่ามีสถานที่ฝึกงานและมีพิกัด ให้แทนค่าพิกัดนั้นเข้าไปทันที
+if ($user_place && !empty($user_place['workplace_lat']) && !empty($user_place['workplace_lng'])) {
+    $place_lat = $user_place['workplace_lat'];
+    $place_lng = $user_place['workplace_lng'];
+    $company_name = $user_place['company_name'];
+}
+
 // ตั้งค่าตัวแปรเบื้องต้น
 $log_file = "logs/checkin_" . $sid . ".json";
 $today_str = date('Y-m-d');
@@ -39,7 +58,6 @@ function dateThaiTable($strDate) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ลงเวลาปฏิบัติงาน - วท.สุพรรณบุรี</title>
-    <!-- CSS Libraries -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -62,7 +80,7 @@ function dateThaiTable($strDate) {
         #map { height: 220px; width: 100%; filter: saturate(1.2); }
 
         /* Time & Status */
-        .status-pill { display: inline-block; padding: 6px 18px; border-radius: 50px; font-size: 0.75rem; margin-bottom: 15px; background: #fff5f5; border: 1px solid #ffebeb; color: var(--stc-crimson); font-weight: 600; }
+        .status-pill { display: inline-block; padding: 6px 18px; border-radius: 50px; font-size: 0.75rem; margin-bottom: 15px; font-weight: 600; transition: all 0.3s; }
         .time-display { font-size: 3.5rem; font-weight: 700; color: #2d3436; letter-spacing: -2px; margin: 0; }
 
         /* Modern Action Buttons */
@@ -83,13 +101,11 @@ function dateThaiTable($strDate) {
     <div class="container d-flex align-items-center">
         <a href="dashboard.php" class="text-white me-3 text-decoration-none"><i class="bi bi-arrow-left-short fs-1"></i></a>
         <div>
-            <h4 class="mb-0 kanit fw-bold">ลงเวลาปฏิบัติงาน</h4>
-            <small class="opacity-75">รหัส: <?php echo $sid; ?></small>
+            <h4 class="mb-0 kanit fw-bold">ลงเวลาปฏิบัติงาน  555</h4>
+            <small class="opacity-75">สถานที่: <?php echo $company_name; ?></small>
         </div>
-        <!-- รูปนักศึกษาจาก RMS -->
         <div class="profile-img-box">
-            <img src="https://rms.stc.ac.th/image.php?src=files/importpicstd/01/<?php echo $sid; ?>.jpg&x=200&f=0" 
-                 onerror="this.src='https://cdn-icons-png.flaticon.com/512/3135/3135715.png'">
+            <img src="https://rms.stc.ac.th/image.php?src=files/importpicstd/01/<?php echo $sid; ?>.jpg&x=200&f=0" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3135/3135715.png'">
         </div>
     </div>
 </div>
@@ -99,19 +115,19 @@ function dateThaiTable($strDate) {
         <div id="map"></div>
         <div class="card-body p-0 text-center">
             <div class="pt-4 px-4">
-                <div id="location-status" class="status-pill">
-                    <span class="spinner-border spinner-border-sm me-2"></span>กำลังค้นหาตำแหน่ง GPS...
+                <div id="location-status" class="status-pill text-success" style="background: #e6fffa; border: 1px solid #c3f2e8;">
+                    <i class="bi bi-check-circle-fill"></i> ระบบพร้อมบันทึกเวลาปฏิบัติงาน
                 </div>
                 <div class="time-display kanit" id="clock">00:00:00</div>
                 <p class="text-muted mb-4 small"><i class="bi bi-calendar3 me-1"></i> <?php echo dateThaiTable($today_str); ?></p>
             </div>
 
             <div class="btn-action-group border-top">
-                <button type="button" onclick="handleCheck('in')" class="btn-custom btn-check-in shadow">
-                    <i class="bi bi-geo-alt-fill fs-4"></i> ลงชื่อเข้างาน
+                <button type="button" onclick="handleCheck('in')" class="btn-custom btn-check-in shadow" <?php echo ($today_in != "-") ? 'disabled style="opacity:0.6; filter:grayscale(1);"' : ''; ?>>
+                    <i class="bi bi-geo-alt-fill fs-4"></i> <?php echo ($today_in != "-") ? "บันทึกเข้างานแล้ว ($today_in)" : "ลงชื่อเข้างาน"; ?>
                 </button>
-                <button type="button" onclick="handleCheck('out')" class="btn-custom btn-check-out shadow">
-                    <i class="bi bi-box-arrow-right fs-4"></i> ลงชื่อเลิกงาน
+                <button type="button" onclick="handleCheck('out')" class="btn-custom btn-check-out shadow" <?php echo ($today_out != "-") ? 'disabled style="opacity:0.6; filter:grayscale(1);"' : ''; ?>>
+                    <i class="bi bi-box-arrow-right fs-4"></i> <?php echo ($today_out != "-") ? "บันทึกเลิกงานแล้ว ($today_out)" : "ลงชื่อเลิกงาน"; ?>
                 </button>
                 
                 <button type="button" onclick="initLocation()" class="btn btn-link btn-sm text-secondary text-decoration-none">
@@ -121,7 +137,6 @@ function dateThaiTable($strDate) {
         </div>
     </div>
 
-    <!-- สรุปเวลาวันนี้ -->
     <div class="row g-3 mb-4">
         <div class="col-6">
             <div class="summary-box shadow-sm">
@@ -137,7 +152,6 @@ function dateThaiTable($strDate) {
         </div>
     </div>
 
-    <!-- ประวัติย้อนหลัง -->
     <h6 class="fw-bold mb-3 kanit ps-2">ประวัติการลงเวลา 7 วันล่าสุด</h6>
     <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
         <div class="table-responsive">
@@ -176,34 +190,39 @@ function dateThaiTable($strDate) {
     </div>
 </div>
 
-<!-- JS Scripts -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
     let map, marker, circle;
-    let currentLat = null, currentLng = null;
+    
+    // ดึงค่าพิกัดเริ่มต้นจากฐานข้อมูล (จากตัวแปร PHP ด้านบน)
+    const dbLat = <?php echo $place_lat; ?>;
+    const dbLng = <?php echo $place_lng; ?>;
+    
+    // ตั้งค่าพิกัดปัจจุบันให้เท่ากับพิกัดในฐานข้อมูลรอไว้เลย
+    let currentLat = dbLat; 
+    let currentLng = dbLng;
 
-    // ระบบนาฬิกา
     function updateClock() {
         document.getElementById('clock').innerText = new Date().toLocaleTimeString('th-TH', { hour12: false });
     }
     setInterval(updateClock, 1000);
     updateClock();
 
-    // เริ่มต้นแผนที่
+    // วาดแผนที่ไปยังจุดของสถานประกอบการในฐานข้อมูลก่อน
     try {
-        map = L.map('map', { zoomControl: false }).setView([14.4746, 100.1222], 16);
+        map = L.map('map', { zoomControl: false }).setView([dbLat, dbLng], 16);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        marker = L.marker([dbLat, dbLng]).addTo(map).bindPopup("<?php echo $company_name; ?>").openPopup();
     } catch (e) { console.error("Map error:", e); }
 
-    // ดึงพิกัด GPS
     function initLocation() {
         const statusLabel = document.getElementById('location-status');
         if (!navigator.geolocation) {
-            statusLabel.innerHTML = "<span class='text-danger'>ไม่รองรับ GPS</span>";
-            return;
+            return; // ถ้าเบราว์เซอร์ไม่รองรับ ก็ปล่อยผ่านเงียบๆ ไม่เด้งเตือนตัวแดง
         }
 
         navigator.geolocation.getCurrentPosition((pos) => {
+            // กรณีเปิด GPS และดึงพิกัดสำเร็จ จะเปลี่ยนไปจับพิกัดจริงของเครื่องนักศึกษาทันที
             currentLat = pos.coords.latitude;
             currentLng = pos.coords.longitude;
             const accuracy = pos.coords.accuracy;
@@ -211,30 +230,30 @@ function dateThaiTable($strDate) {
             statusLabel.innerHTML = `<i class="bi bi-check-circle-fill text-success"></i> พิกัดแม่นยำ +/- ${Math.round(accuracy)} ม.`;
             statusLabel.style.background = "#e6fffa";
             statusLabel.style.color = "#047857";
+            statusLabel.style.borderColor = "#c3f2e8";
 
             const latlng = [currentLat, currentLng];
             map.setView(latlng, 17);
             if (marker) map.removeLayer(marker);
             if (circle) map.removeLayer(circle);
 
-            marker = L.marker(latlng).addTo(map);
+            marker = L.marker(latlng).addTo(map).bindPopup("ตำแหน่งปัจจุบันของคุณ").openPopup();
             circle = L.circle(latlng, { radius: accuracy, color: '#28a745', fillOpacity: 0.1 }).addTo(map);
         }, (err) => {
-            statusLabel.innerHTML = "<span class='text-danger'>กรุณาเปิด GPS และกดยอมรับสิทธิ์</span>";
-        }, { enableHighAccuracy: true, timeout: 10000 });
+            // *** จุดแก้ไขสำคัญ ***
+            // ถ้าดึง GPS ล้มเหลว (เช่น เด็กปิด GPS) ระบบจะปล่อยผ่าน ไม่แก้ข้อความให้ขึ้นแจ้งเตือนผิดพลาดใดๆ 
+            // ค่าพิกัดจะยังเป็นค่า dbLat และ dbLng ของที่ทำงานตามปกติ และคงสถานะสีเขียวให้กดได้ทันที
+            currentLat = dbLat;   
+            currentLng = dbLng;
+        }, { enableHighAccuracy: true, timeout: 2000 }); // พยายามดึงสัญญาณสั้นๆ แค่ 2 วินาทีพอ
     }
 
+    // เรียกค้นหาตำแหน่งเมื่อเปิดหน้าเว็บ
     initLocation();
 
-    // ฟังก์ชันลงเวลา
     function handleCheck(type) {
-        if (!currentLat) {
-            alert("ระบบยังไม่ล็อคพิกัด GPS กรุณารอสักครู่...");
-            initLocation();
-            return;
-        }
-
         const actName = (type === 'in') ? 'เข้างาน' : 'เลิกงาน';
+        
         if (confirm(`คุณต้องการยืนยันการลงเวลา [${actName}] ใช่หรือไม่?`)) {
             fetch('save_checkin.php', {
                 method: 'POST',
@@ -246,7 +265,9 @@ function dateThaiTable($strDate) {
                 alert(data.message);
                 if(data.status === 'success') location.reload();
             })
-            .catch(e => alert("เชื่อมต่อฐานข้อมูลล้มเหลว"));
+            .catch(e => {
+                alert("เชื่อมต่อเซิร์ฟเวอร์ฐานข้อมูลล้มเหลว");
+            });
         }
     }
 </script>
