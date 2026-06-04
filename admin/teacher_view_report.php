@@ -166,7 +166,7 @@ function monthThaiName($monthKey) {
 
 <div class="profile-section no-print">
     <div class="container d-flex justify-content-between align-items-center">
-        <a href="teacher_student_list.php?gname=<?php echo urlencode($std['group_name']); ?>" class="btn-back-nav">
+        <a href="teacher_group_view.php?gname=<?php echo urlencode($std['group_name']); ?>" class="btn-back-nav">
             <i class="bi bi-chevron-left"></i> ย้อนกลับไปเลือกนักศึกษา
         </a>
         <div class="text-center flex-grow-1 me-5">

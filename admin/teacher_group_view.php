@@ -21,6 +21,15 @@ $result = mysqli_query($conn, $sql);
 // สร้าง Array พักข้อมูลไว้สำหรับนำไปวนลูปแสดงในตาราง Modal หน้ารวม
 $summary_data = [];
 $count = 0; 
+
+// ฟังก์ชันแปลงวันที่คีย์ JSON เป็นวันที่ไทยสั้น
+function dateThaiShort($strDate) {
+    $strYear = substr(date("Y", strtotime($strDate)) + 543, 2);
+    $strMonth = date("n", strtotime($strDate));
+    $strDay = date("j", strtotime($strDate));
+    $strMonthCut = Array("", "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค.");
+    return "$strDay $strMonthCut[$strMonth] $strYear";
+}
 ?>
 <!DOCTYPE html>
 <html lang="th">
@@ -132,21 +141,37 @@ $count = 0;
             color: #2d3436;
         }
 
+        /* ปรับแต่งปุ่ม Action โครงสร้างใหม่ */
         .btn-action {
-            background: #f8f9ff;
-            color: var(--accent-color);
-            border: 1px solid #e0e7ff;
-            border-radius: 15px;
-            padding: 10px 20px;
+            border-radius: 12px;
+            padding: 8px 15px;
             font-weight: 600;
-            width: 100%;
-            transition: all 0.3s;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
         }
 
-        .btn-action:hover {
-            background: var(--accent-color);
+        /* 1. ปุ่มประวัติลงเวลาสีฟ้าพาสเทล */
+        .btn-checkin-history {
+            background: #e0f2fe;
+            color: #0369a1;
+            border: 1px solid #bae6fd;
+        }
+        .btn-checkin-history:hover {
+            background: #bae6fd;
+            color: #0369a1;
+        }
+
+        /* 2. ปุ่มดูรายงานเปลี่ยนจากสีน้ำเงินหลักเป็น "สีฟ้าสดใส" */
+        .btn-view-report {
+            background: #0ea5e9;
             color: white;
-            box-shadow: 0 10px 20px rgba(67, 97, 238, 0.2);
+            border: 1px solid #0ea5e9;
+        }
+        .btn-view-report:hover {
+            background: #0284c7;
+            color: white;
+            border-color: #0284c7;
+            box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
         }
 
         /* Buttons Header */
@@ -206,30 +231,28 @@ $count = 0;
         <?php while($row = mysqli_fetch_assoc($result)): 
             $count++; 
             
-            // --- ระบบสแกนหาไฟล์ Log อัตโนมัติ (แก้ปัญหาข้อมูล Log ไม่แสดงผล) ---
+            // --- ระบบดักสแกนและโหลดข้อมูลจากไฟล์ JSON ---
             $total_checkins = 0;
             $has_log_file = false; 
+            $checkin_logs_array = []; 
             
-            // ตรวจสอบเงื่อนไขแรก: โฟลเดอร์ logs ถอยหลังออกไป 1 ชั้น
             $log_file_path = "../logs/checkin_" . $row['student_id'] . ".json";
-            
-            // ตรวจสอบเงื่อนไขสำรอง: โฟลเดอร์ logs อยู่ในระดับชั้นเดียวกัน
             if (!file_exists($log_file_path)) {
                 $log_file_path = "logs/checkin_" . $row['student_id'] . ".json";
             }
             
-            // เมื่อจับคู่ปลายทางเจอสำเร็จ ให้ทำการนับสถิติวัน
             if (file_exists($log_file_path)) {
                 $has_log_file = true;
                 $json_content = json_decode(file_get_contents($log_file_path), true);
                 if (is_array($json_content)) {
                     $total_checkins = count($json_content); 
+                    $checkin_logs_array = $json_content; 
                 }
             }
             
-            // ผูกค่าเข้ากับ Array เพื่อส่งต่อให้ระบบ Modal สรุปกลุ่ม
             $row['total_checkins'] = $total_checkins;
             $row['has_log_file'] = $has_log_file; 
+            $row['checkin_logs'] = $checkin_logs_array;
             $summary_data[] = $row; 
         ?>
         <div class="col-xl-3 col-lg-4 col-md-6 mb-5">
@@ -275,14 +298,81 @@ $count = 0;
                         </div>
                     </div>
                     
-                    <a href="teacher_view_report.php?sid=<?php echo $row['student_id']; ?>" 
-                       target="_blank" 
-                       class="btn btn-action">
-                        <i class="bi bi-journal-text me-2"></i> ดูรายงานฝึกงาน
-                    </a>
+                    <div class="d-flex gap-2 mt-2">
+                        <button type="button" class="btn btn-action btn-checkin-history w-50" 
+                                data-bs-toggle="modal" data-bs-target="#checkinModal_<?php echo $row['student_id']; ?>" <?php echo (!$has_log_file || $total_checkins == 0) ? 'disabled style="opacity:0.5;"' : ''; ?>>
+                            <i class="bi bi-clock-history me-1"></i> ประวัติลงชื่อ
+                        </button>
+                        <a href="teacher_view_report.php?sid=<?php echo $row['student_id']; ?>" 
+                           target="_blank" 
+                           class="btn btn-action btn-view-report w-50">
+                            <i class="bi bi-journal-text me-1"></i> ดูรายงาน
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
+
+        <?php if($has_log_file && $total_checkins > 0): ?>
+        <div class="modal fade" id="checkinModal_<?php echo $row['student_id']; ?>" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+                <div class="modal-content border-0 rounded-4">
+                    <div class="modal-header bg-info bg-opacity-10 border-0 py-3 px-4">
+                        <h6 class="modal-title kanit fw-bold text-info-emphasis"><i class="bi bi-calendar2-check-fill me-2"></i>ประวัติการลงเวลาปฏิบัติงาน</h6>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-0">
+                        <div class="p-3 bg-light border-bottom small">
+                            <strong>นักศึกษา:</strong> <?php echo $row['fullname']; ?><br>
+                            <strong>รหัสประจำตัว:</strong> <?php echo $row['student_id']; ?>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover align-middle mb-0 text-center small">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>วันที่</th>
+                                        <th class="text-success">เวลาเข้า</th>
+                                        <th class="text-danger">เวลาออก</th>
+                                        <th>พิกัดส่ง</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php 
+                                    $checkin_logs_loop = $row['checkin_logs'];
+                                    krsort($checkin_logs_loop); 
+                                    
+                                    foreach ($checkin_logs_loop as $date_key => $time_data): 
+                                        $in_time = isset($time_data['check_in']['time']) ? substr($time_data['check_in']['time'], 0, 5) . " น." : "-";
+                                        $out_time = isset($time_data['check_out']['time']) ? substr($time_data['check_out']['time'], 0, 5) . " น." : "-";
+                                        
+                                        $target_lat = isset($time_data['check_in']['lat']) ? $time_data['check_in']['lat'] : (isset($time_data['check_out']['lat']) ? $time_data['check_out']['lat'] : '');
+                                        $target_lng = isset($time_data['check_in']['lng']) ? $time_data['check_in']['lng'] : (isset($time_data['check_out']['lng']) ? $time_data['check_out']['lng'] : '');
+                                    ?>
+                                    <tr>
+                                        <td class="fw-bold text-secondary"><?php echo dateThaiShort($date_key); ?></td>
+                                        <td class="text-success fw-bold"><?php echo $in_time; ?></td>
+                                        <td class="text-danger fw-bold"><?php echo $out_time; ?></td>
+                                        <td>
+                                            <?php if(!empty($target_lat) && !empty($target_lng)): ?>
+                                                <a href="https://www.google.com/maps?q=<?php echo $target_lat; ?>,<?php echo $target_lng; ?>" 
+                                                   target="_blank" class="btn btn-xs btn-outline-danger px-2 py-0" style="font-size:0.75rem; border-radius:6px;">
+                                                    <i class="bi bi-geo-alt-fill"></i> แผนที่
+                                                </a>
+                                            <?php else: ?>
+                                                -
+                                            <?php endif; ?>
+                                        </td>
+                                    </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <?php endif; ?>
+
         <?php endwhile; ?>
     </div>
 </div>
@@ -332,7 +422,8 @@ $count = 0;
                                             ไม่ได้ลงเช็คชื่อ
                                         </span>
                                     <?php elseif($std['total_checkins'] > 0): ?>
-                                        <span class="badge bg-info text-white px-3 py-2 rounded-pill fw-bold">
+                                        <span class="badge bg-info text-white px-3 py-2 rounded-pill fw-bold" style="cursor:pointer;" 
+                                              data-bs-toggle="modal" data-bs-target="#checkinModal_<?php echo $std['student_id']; ?>">
                                             <i class="bi bi-calendar-check me-1"></i> <?php echo $std['total_checkins']; ?> วัน
                                         </span>
                                     <?php else: ?>
@@ -355,8 +446,8 @@ $count = 0;
                                 </td>
                                 <td class="text-center">
                                     <a href="teacher_view_report.php?sid=<?php echo $std['student_id']; ?>" 
-                                       target="_blank" 
-                                       class="btn btn-sm btn-outline-primary rounded-3 px-2">
+                                        target="_blank" 
+                                        class="btn btn-sm btn-outline-primary rounded-3 px-2">
                                         <i class="bi bi-search"></i>
                                     </a>
                                 </td>
