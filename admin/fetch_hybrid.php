@@ -40,7 +40,7 @@ if(isset($_POST["query"])){
 
         if(mysqli_num_rows($res_group) > 0){
             while($row = mysqli_fetch_array($res_group)){
-                $output .= '<a href="teacher_student_list.php?gname='.urlencode($row["group_name"]).'" class="list-group-item list-group-item-action py-3">
+                $output .= '<a href="teacher_group_view.php?gname='.urlencode($row["group_name"]).'" class="list-group-item list-group-item-action py-3">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <span>
                                         <i class="bi bi-collection-fill text-primary me-2"></i> 
