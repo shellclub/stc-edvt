@@ -174,11 +174,13 @@ $count = 0;
         }
         .btn-summary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255, 152, 0, 0.5); color: white; }
         
-        .report-count-badge {
-            font-size: 0.85rem;
-            padding: 5px 15px;
+        .status-count-badge {
+            font-size: 0.8rem;
+            padding: 5px 12px;
             border-radius: 50px;
             font-weight: 600;
+            display: inline-block;
+            width: 100%;
         }
     </style>
 </head>
@@ -203,7 +205,32 @@ $count = 0;
     <div class="row g-5">
         <?php while($row = mysqli_fetch_assoc($result)): 
             $count++; 
-            $summary_data[] = $row; // บันทึกข้อมูลลง Array เพื่อส่งต่อให้ตารางสรุปในโครงสร้างด้านล่าง
+            
+            // --- ระบบสแกนหาไฟล์ Log อัตโนมัติ (แก้ปัญหาข้อมูล Log ไม่แสดงผล) ---
+            $total_checkins = 0;
+            $has_log_file = false; 
+            
+            // ตรวจสอบเงื่อนไขแรก: โฟลเดอร์ logs ถอยหลังออกไป 1 ชั้น
+            $log_file_path = "../logs/checkin_" . $row['student_id'] . ".json";
+            
+            // ตรวจสอบเงื่อนไขสำรอง: โฟลเดอร์ logs อยู่ในระดับชั้นเดียวกัน
+            if (!file_exists($log_file_path)) {
+                $log_file_path = "logs/checkin_" . $row['student_id'] . ".json";
+            }
+            
+            // เมื่อจับคู่ปลายทางเจอสำเร็จ ให้ทำการนับสถิติวัน
+            if (file_exists($log_file_path)) {
+                $has_log_file = true;
+                $json_content = json_decode(file_get_contents($log_file_path), true);
+                if (is_array($json_content)) {
+                    $total_checkins = count($json_content); 
+                }
+            }
+            
+            // ผูกค่าเข้ากับ Array เพื่อส่งต่อให้ระบบ Modal สรุปกลุ่ม
+            $row['total_checkins'] = $total_checkins;
+            $row['has_log_file'] = $has_log_file; 
+            $summary_data[] = $row; 
         ?>
         <div class="col-xl-3 col-lg-4 col-md-6 mb-5">
             <div class="card student-card">
@@ -219,16 +246,33 @@ $count = 0;
                     <span class="std-id fw-bold kanit"><?php echo $row['student_id']; ?></span>
                     <h5 class="std-name kanit text-truncate"><?php echo $row['fullname']; ?></h5>
                     
-                    <div class="mb-3">
-                        <?php if($row['total_reports'] > 0): ?>
-                            <span class="badge bg-success-subtle text-success report-count-badge">
-                                <i class="bi bi-check-circle-fill me-1"></i> รายงานแล้ว <?php echo $row['total_reports']; ?> ครั้ง
-                            </span>
-                        <?php else: ?>
-                            <span class="badge bg-danger-subtle text-danger report-count-badge">
-                                <i class="bi bi-x-circle-fill me-1"></i> ยังไม่มีรายงาน
-                            </span>
-                        <?php endif; ?>
+                    <div class="row g-1 mb-3">
+                        <div class="col-12">
+                            <?php if(!$has_log_file): ?>
+                                <span class="badge bg-danger-subtle text-danger status-count-badge" style="border: 1px solid #f5c2c7;">
+                                    <i class="bi bi-file-earmark-x-fill me-1"></i> ไม่ได้ลงเช็คชื่อ
+                                </span>
+                            <?php elseif($total_checkins > 0): ?>
+                                <span class="badge bg-info-subtle text-info status-count-badge">
+                                    <i class="bi bi-calendar-check-fill me-1"></i> ลงเวลาแล้ว <?php echo $total_checkins; ?> วัน
+                                </span>
+                            <?php else: ?>
+                                <span class="badge bg-secondary-subtle text-secondary status-count-badge">
+                                    <i class="bi bi-calendar-x me-1"></i> ยังไม่มีการลงเวลา
+                                </span>
+                            <?php endif; ?>
+                        </div>
+                        <div class="col-12 mt-1">
+                            <?php if($row['total_reports'] > 0): ?>
+                                <span class="badge bg-success-subtle text-success status-count-badge">
+                                    <i class="bi bi-check-circle-fill me-1"></i> บันทึกรายงาน <?php echo $row['total_reports']; ?> ครั้ง
+                                </span>
+                            <?php else: ?>
+                                <span class="badge bg-danger-subtle text-danger status-count-badge">
+                                    <i class="bi bi-x-circle-fill me-1"></i> ยังไม่มีรายงาน
+                                </span>
+                            <?php endif; ?>
+                        </div>
                     </div>
                     
                     <a href="teacher_view_report.php?sid=<?php echo $row['student_id']; ?>" 
@@ -252,7 +296,7 @@ $count = 0;
                         <i class="bi bi-clipboard-data-fill fs-4"></i>
                     </div>
                     <div>
-                        <h5 class="modal-title kanit fw-bold text-dark" id="summaryGroupModalLabel">ตารางสรุปการส่งรายงาน</h5>
+                        <h5 class="modal-title kanit fw-bold text-dark" id="summaryGroupModalLabel">ตารางสรุปข้อมูลปฏิบัติงานและส่งรายงาน</h5>
                         <small class="text-muted">กลุ่มการเรียน: <?php echo $gname; ?></small>
                     </div>
                 </div>
@@ -263,11 +307,12 @@ $count = 0;
                     <table class="table table-hover align-middle mb-0">
                         <thead class="table-light">
                             <tr class="kanit text-secondary" style="font-size: 0.9rem;">
-                                <th class="text-center" style="width: 70px;">ลำดับ</th>
-                                <th style="width: 140px;">รหัสนักศึกษา</th>
+                                <th class="text-center" style="width: 60px;">ลำดับ</th>
+                                <th style="width: 130px;">รหัสนักศึกษา</th>
                                 <th>ชื่อ-นามสกุล</th>
-                                <th class="text-center" style="width: 150px;">จำนวนครั้งที่รายงาน</th>
-                                <th class="text-center" style="width: 100px;">ลิงก์ตรวจ</th>
+                                <th class="text-center" style="width: 160px;">ลงเวลาปฏิบัติงาน</th>
+                                <th class="text-center" style="width: 140px;">ส่งรายงานบันทึก</th>
+                                <th class="text-center" style="width: 80px;">ตรวจ</th>
                             </tr>
                         </thead>
                         <tbody style="font-size: 0.95rem;">
@@ -280,10 +325,27 @@ $count = 0;
                                 <td class="text-center fw-bold text-secondary"><?php echo $sum_idx; ?></td>
                                 <td><span class="badge bg-light text-dark border px-2 py-2 fw-normal"><?php echo $std['student_id']; ?></span></td>
                                 <td class="fw-bold text-dark"><?php echo $std['fullname']; ?></td>
+                                
+                                <td class="text-center">
+                                    <?php if(!$std['has_log_file']): ?>
+                                        <span class="badge bg-danger-subtle text-danger px-3 py-2 rounded-pill fw-bold" style="border: 1px solid #f5c2c7;">
+                                            ไม่ได้ลงเช็คชื่อ
+                                        </span>
+                                    <?php elseif($std['total_checkins'] > 0): ?>
+                                        <span class="badge bg-info text-white px-3 py-2 rounded-pill fw-bold">
+                                            <i class="bi bi-calendar-check me-1"></i> <?php echo $std['total_checkins']; ?> วัน
+                                        </span>
+                                    <?php else: ?>
+                                        <span class="badge bg-light text-muted border px-3 py-2 rounded-pill">
+                                            0 วัน
+                                        </span>
+                                    <?php endif; ?>
+                                </td>
+                                
                                 <td class="text-center">
                                     <?php if($std['total_reports'] > 0): ?>
                                         <span class="badge bg-success px-3 py-2 rounded-pill fw-bold">
-                                            <?php echo $std['total_reports']; ?> ครั้ง
+                                            <i class="bi bi-journal-text me-1"></i> <?php echo $std['total_reports']; ?> ครั้ง
                                         </span>
                                     <?php else: ?>
                                         <span class="badge bg-danger px-3 py-2 rounded-pill fw-bold">
