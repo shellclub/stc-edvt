@@ -2,7 +2,10 @@
 session_start();
 include "config.php";
 
-if (!isset($_SESSION['student_id'])) { header("location: index.php"); exit(); }
+if (!isset($_SESSION['student_id'])) { 
+    header("location: index.php"); 
+    exit(); 
+}
 $sid = $_SESSION['student_id'];
 
 // 1. ดึงข้อมูลนักศึกษาและสถานที่ฝึกงาน
@@ -16,8 +19,14 @@ $user = mysqli_fetch_array($query_user);
 $sid_char3 = substr($sid, 2, 1);
 $student_level = ($sid_char3 == '2') ? "ปวช." : (($sid_char3 == '3') ? "ปวส." : "");
 
-// 3. ตั้งค่าวันฝึกงานจากข้อมูลที่กรอก (เช็คว่ามีคำว่า 'เสาร์' หรือไม่)
-$work_days = ['Monday'=>'จันทร์', 'Tuesday'=>'อังคาร', 'Wednesday'=>'พุธ', 'Thursday'=>'พฤหัสบดี', 'Friday'=>'ศุกร์'];
+// 3. ตั้งค่าวันฝึกงานจากข้อมูลที่กรอก
+$work_days = [
+    'Monday'    => 'จันทร์',
+    'Tuesday'   => 'อังคาร',
+    'Wednesday' => 'พุธ',
+    'Thursday'  => 'พฤหัสบดี',
+    'Friday'    => 'ศุกร์'
+];
 if (strpos($user['training_days'], 'เสาร์') !== false) {
     $work_days['Saturday'] = 'เสาร์';
 }
@@ -33,10 +42,10 @@ while ($row = mysqli_fetch_assoc($query_report)) {
 }
 
 function dateThaiShort($strDate) {
-    if(!$strDate) return "-";
+    if (!$strDate) return "-";
     $strYear = date("Y", strtotime($strDate)) + 543;
-    $strMonthCut = Array("", "ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค.");
-    return date("j", strtotime($strDate))." ".$strMonthCut[date("n", strtotime($strDate))]." ".$strYear;
+    $strMonthCut = ["", "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
+    return date("j", strtotime($strDate)) . " " . $strMonthCut[(int)date("n", strtotime($strDate))] . " " . $strYear;
 }
 ?>
 
@@ -44,37 +53,118 @@ function dateThaiShort($strDate) {
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <title>รายงานการฝึกงาน - <?php echo $user['fullname']; ?></title>
+    <title>รายงานการฝึกงาน - <?php echo htmlspecialchars($user['fullname']); ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        @media screen {
-            body { background-color: #525659; margin: 0; }
-            .page { 
-                width: 210mm; min-height: 297mm; padding: 15mm; 
-                margin: 10mm auto; background: white; box-shadow: 0 0 10px rgba(0,0,0,0.5); 
-            }
-        }
-        
-        body { font-family: 'Sarabun', sans-serif; color: #000; }
-        .page { box-sizing: border-box; position: relative; }
-        
-        /* ตั้งค่าแยกหน้าสำหรับ Print */
-        @media print {
-            @page { size: A4; margin: 0; }
-            body { background: none; margin: 0; padding: 0; }
-            .page { 
-                margin: 0; width: 210mm; height: 297mm; 
-                padding: 15mm; page-break-after: always; 
-                box-shadow: none; border: none;
-            }
-            .no-print { display: none !important; }
+        * {
+            box-sizing: border-box;
         }
 
-        .table-bordered th, .table-bordered td { border: 1px solid black !important; padding: 5px; vertical-align: middle; font-size: 14px; }
-        .logo { width: 3.5cm; margin-bottom: 1cm; }
+        body { 
+            font-family: 'Sarabun', sans-serif; 
+            color: #000; 
+            background-color: #525659;
+            margin: 0;
+            padding: 0;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+
+        /* มุมมองบนหน้าจอคอมพิวเตอร์ */
+        @media screen {
+            .page-container { 
+                width: 210mm; 
+                min-height: 297mm; 
+                padding: 15mm; 
+                margin: 10mm auto; 
+                background: white; 
+                box-shadow: 0 0 10px rgba(0,0,0,0.5); 
+                position: relative;
+            }
+        }
+
+        /* มุมมองการสั่งพิมพ์ / บันทึกเป็น PDF */
+        @media print {
+            @page { 
+                size: A4 portrait; 
+                margin: 12mm; /* ให้เบราว์เซอร์จัดการขอบกระดาษจริง */
+            }
+            body { 
+                background: white !important; 
+                margin: 0 !important; 
+                padding: 0 !important; 
+            }
+            .page-container { 
+                margin: 0 !important; 
+                padding: 0 !important; 
+                width: 100% !important; 
+                min-height: auto !important; 
+                box-shadow: none !important; 
+                border: none !important;
+                page-break-after: always;
+                break-after: page;
+            }
+            .no-print { display: none !important; }
+            
+            /* ป้องกันแถวตารางขาดครึ่ง */
+            tr { 
+                page-break-inside: avoid !important; 
+                break-inside: avoid !important; 
+            }
+            thead { 
+                display: table-header-group; 
+            }
+            .signature-block {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+        }
+
+        /* สไตล์ตาราง */
+        .table-custom {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 12px;
+        }
+        .table-custom th, .table-custom td {
+            border: 1px solid #000 !important;
+            padding: 6px 8px;
+            vertical-align: top;
+        }
+        .table-custom th {
+            background-color: #f2f2f2 !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .logo { width: 3.2cm; margin-bottom: 0.8cm; }
         .info-title { font-weight: bold; width: 35%; background: #f8f9fa; }
-        .cover-page { display: flex; flex-direction: column; align-items: center; text-align: center; height: 100%; justify-content: center; }
+        
+        .cover-content { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            text-align: center; 
+            min-height: 240mm;
+            justify-content: space-between; 
+            padding: 30mm 0 10mm 0;
+        }
+
+        .report-text {
+            font-size: 12px;
+            line-height: 1.45;
+            word-break: break-word;
+            white-space: normal;
+        }
+
+        .img-report {
+            object-fit: cover;
+            border-radius: 3px;
+            border: 1px solid #ccc;
+        }
     </style>
 </head>
 <body>
@@ -84,85 +174,113 @@ function dateThaiShort($strDate) {
     <a href="dashboard.php" class="btn btn-light btn-lg ms-2 border">กลับหน้าหลัก</a>
 </div>
 
-<!-- หน้าที่ 1: หน้าปก -->
-<div class="page">
-    <div class="cover-page">
-        <img src="image/icon_stc.jpg" class="logo">
-        <h2 class="fw-bold">วิทยาลัยเทคนิคสุพรรณบุรี</h2>
-        <h3 class="mt-4 fw-bold">รายงานการฝึกประสบการณ์วิชาชีพ</h3>
-        <div class="mt-5" style="font-size: 18pt; line-height: 2.5;">
-            โดย<br>
-            <strong><?php echo $user['fullname']; ?></strong><br>
-            รหัสนักศึกษา <?php echo $user['student_id']; ?><br>
-            ระดับชั้น <?php echo $student_level; ?> กลุ่ม <?php echo $user['group_name']; ?>
+<!-- ================= หน้าที่ 1: หน้าปก ================= -->
+<div class="page-container">
+    <div class="cover-content">
+        <div>
+            <img src="image/icon_stc.jpg" class="logo" onerror="this.style.display='none'">
+            <h2 class="fw-bold" style="font-size: 22pt;">วิทยาลัยเทคนิคสุพรรณบุรี</h2>
+            <h3 class="mt-3 fw-bold" style="font-size: 18pt;">รายงานการฝึกประสบการณ์วิชาชีพ</h3>
         </div>
-        <div class="mt-auto fw-bold" style="font-size: 16pt; margin-bottom: 2cm;">ภาคเรียนที่ 1 ปีการศึกษา 2569</div>
+        
+        <div style="font-size: 16pt; line-height: 2.2;">
+            โดย<br>
+            <strong><?php echo htmlspecialchars($user['fullname']); ?></strong><br>
+            รหัสนักศึกษา <?php echo htmlspecialchars($user['student_id']); ?><br>
+            ระดับชั้น <?php echo $student_level; ?> กลุ่ม <?php echo htmlspecialchars($user['group_name']); ?>
+        </div>
+        
+        <div class="fw-bold" style="font-size: 15pt;">
+            ภาคเรียนที่ 1 ปีการศึกษา 2569
+        </div>
     </div>
 </div>
 
-<!-- หน้าที่ 2: ข้อมูลส่วนตัว -->
-<div class="page">
-    <h4 class="text-center fw-bold mb-4">ข้อมูลนักศึกษาและรายละเอียดการฝึกงาน</h4>
+<!-- ================= หน้าที่ 2: ข้อมูลส่วนตัว ================= -->
+<div class="page-container">
+    <h4 class="text-center fw-bold mb-4" style="font-size: 16pt;">ข้อมูลนักศึกษาและรายละเอียดการฝึกงาน</h4>
     <div class="text-center mb-4">
         <img src="https://rms.stc.ac.th/image.php?src=files/importpicstd/01/<?php echo $user['student_id']; ?>.jpg&x=150&f=0" class="rounded border" width="120" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png';">
     </div>
 
-    <table class="table table-bordered w-100">
-        <tr><th colspan="2" class="bg-light text-center">ข้อมูลส่วนตัว</th></tr>
-        <tr><td class="info-title">ชื่อ-นามสกุล</td><td><?php echo $user['fullname']; ?></td></tr>
-        <tr><td class="info-title">รหัสนักศึกษา</td><td><?php echo $user['student_id']; ?></td></tr>
+    <table class="table-custom">
+        <tr><th colspan="2">ข้อมูลส่วนตัว</th></tr>
+        <tr><td class="info-title">ชื่อ-นามสกุล</td><td><?php echo htmlspecialchars($user['fullname']); ?></td></tr>
+        <tr><td class="info-title">รหัสนักศึกษา</td><td><?php echo htmlspecialchars($user['student_id']); ?></td></tr>
         <tr><td class="info-title">ระดับชั้น</td><td><?php echo $student_level; ?></td></tr>
         
-        <tr><th colspan="2" class="bg-light text-center">ข้อมูลสถานประกอบการ</th></tr>
-        <tr><td class="info-title">ชื่อสถานประกอบการ</td><td><?php echo $user['company_name'] ?: '-'; ?></td></tr>
-        <tr><td class="info-title">ชื่อครูฝึก </td><td><?php echo $user['mentor_name'] ?: '-'; ?></td></tr>
-        <tr><td class="info-title">เบอร์โทรติดต่อ</td><td><?php echo $user['company_phone'] ?: '-'; ?></td></tr>
-        <tr><td class="info-title">วันที่ฝึกงานต่อสัปดาห์</td><td><?php echo $user['training_days'] ?: '-'; ?></td></tr>
-        <tr><td class="info-title">ที่อยู่สถานประกอบการ</td><td><?php echo $user['company_address'] ?: '-'; ?></td></tr>
+        <tr><th colspan="2">ข้อมูลสถานประกอบการ</th></tr>
+        <tr><td class="info-title">ชื่อสถานประกอบการ</td><td><?php echo htmlspecialchars($user['company_name'] ?: '-'); ?></td></tr>
+        <tr><td class="info-title">ชื่อครูฝึก</td><td><?php echo htmlspecialchars($user['mentor_name'] ?: '-'); ?></td></tr>
+        <tr><td class="info-title">เบอร์โทรติดต่อ</td><td><?php echo htmlspecialchars($user['company_phone'] ?: '-'); ?></td></tr>
+        <tr><td class="info-title">วันที่ฝึกงานต่อสัปดาห์</td><td><?php echo htmlspecialchars($user['training_days'] ?: '-'); ?></td></tr>
+        <tr><td class="info-title">ที่อยู่สถานประกอบการ</td><td><?php echo htmlspecialchars($user['company_address'] ?: '-'); ?></td></tr>
     </table>
 </div>
 
-<!-- รายงานรายสัปดาห์ -->
-<?php foreach ($weeks as $week_id => $days): ?>
-<div class="page">
-    <h5 class="fw-bold mb-3 text-center">บันทึกรายงานการฝึกงานประจำสัปดาห์</h5>
+<!-- ================= รายงานรายสัปดาห์ (1 หรือ 2 หน้าอัตโนมัติตามความยาวเนื้อหา) ================= -->
+<?php 
+$week_num = 1;
+foreach ($weeks as $week_id => $days): 
+    $data_in_week = [];
+    $total_chars = 0;
+
+    foreach ($days as $d) {
+        $day_name = date('l', strtotime($d['report_date']));
+        $data_in_week[$day_name] = $d;
+        $total_chars += mb_strlen($d['job_details'] ?? '', 'UTF-8');
+    }
+
+    // หากข้อความยาวเกิน 400 ตัวอักษรจะตัดแบ่ง 2 หน้า (หน้าละ 3 วัน) ถ้าไม่เกินจะรวมเป็น 1 หน้าเดียว
+    if ($total_chars > 400) {
+        $chunked_days = array_chunk($work_days, 3, true);
+    } else {
+        $chunked_days = [$work_days];
+    }
+
+    $part = 1;
+    $total_parts = count($chunked_days);
+
+    foreach ($chunked_days as $page_days):
+?>
+<div class="page-container">
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 8px;">
+        <h5 class="fw-bold mb-0" style="font-size: 14pt;">บันทึกรายงานการฝึกงานประจำสัปดาห์ที่ <?php echo $week_num; ?></h5>
+        <?php if ($total_parts > 1): ?>
+            <span style="font-size: 11px; color: #555;">(หน้าที่ <?php echo $part; ?>/<?php echo $total_parts; ?>)</span>
+        <?php endif; ?>
+    </div>
     
-    <table class="table table-bordered">
-        <thead class="text-center bg-light">
+    <table class="table-custom">
+        <thead>
             <tr>
-                <th width="15%">วัน / วันที่</th>
-                <th width="45%">รายละเอียดงานที่ปฏิบัติ</th>
-                <th width="15%">ปัญหา/อุปสรรค</th>
-                <th width="25%">รูปภาพ</th>
+                <th style="width: 17%;">วัน / วันที่</th>
+                <th style="width: 48%;">รายละเอียดงานที่ปฏิบัติ</th>
+                <th style="width: 17%;">ปัญหา/อุปสรรค</th>
+                <th style="width: 18%;">รูปภาพ</th>
             </tr>
         </thead>
         <tbody>
             <?php 
-            $data_in_week = [];
-            foreach($days as $d) {
-                $day_name = date('l', strtotime($d['report_date']));
-                $data_in_week[$day_name] = $d;
-            }
-
-            foreach ($work_days as $eng => $th): 
+            foreach ($page_days as $eng => $th): 
                 $row = isset($data_in_week[$eng]) ? $data_in_week[$eng] : null;
             ?>
             <tr>
-                <td class="text-center">
-                    <strong><?php echo $th; ?></strong><br>
-                    <small style="font-size: 11px;"><?php echo $row ? dateThaiShort($row['report_date']) : '-'; ?></small>
+                <td style="text-align: center;">
+                    <strong>วัน<?php echo $th; ?></strong><br>
+                    <small style="font-size: 11px; color: #444;"><?php echo $row ? dateThaiShort($row['report_date']) : '-'; ?></small>
                 </td>
-                <td style="height: 90px; font-size: 13px;">
-                    <?php echo $row ? nl2br(htmlspecialchars($row['job_details'])) : '<span class="text-muted small">ไม่มีบันทึกงาน</span>'; ?>
+                <td class="report-text" style="<?php echo ($total_parts == 1) ? 'height: 65px;' : 'height: 120px;'; ?>">
+                    <?php echo ($row && !empty(trim($row['job_details']))) ? nl2br(htmlspecialchars($row['job_details'])) : '<span class="text-muted">- ไม่มีบันทึกงาน -</span>'; ?>
                 </td>
-                <td class="small text-danger" style="font-size: 11px;">
-                    <?php echo ($row && $row['problems']) ? htmlspecialchars($row['problems']) : '-'; ?>
+                <td class="report-text text-danger" style="font-size: 11px;">
+                    <?php echo ($row && !empty(trim($row['problems']))) ? nl2br(htmlspecialchars($row['problems'])) : '<span class="text-muted">-</span>'; ?>
                 </td>
-                <td class="text-center">
-                    <?php if($row && $row['report_image']): ?>
-                        <img src="uploads/<?php echo $row['report_image']; ?>" style="max-width: 120px; max-height: 85px; object-fit: cover; border-radius: 4px;">
+                <td style="text-align: center; vertical-align: middle;">
+                    <?php if ($row && !empty($row['report_image'])): ?>
+                        <img src="uploads/<?php echo htmlspecialchars($row['report_image']); ?>" class="img-report" style="<?php echo ($total_parts == 1) ? 'max-width: 90px; max-height: 60px;' : 'max-width: 110px; max-height: 85px;'; ?>">
                     <?php else: ?>
-                        <small class="text-muted">-</small>
+                        <span class="text-muted small">-</span>
                     <?php endif; ?>
                 </td>
             </tr>
@@ -170,12 +288,30 @@ function dateThaiShort($strDate) {
         </tbody>
     </table>
 
-    <div class="row mt-4 text-center" style="font-size: 14px;">
-        <div class="col-6"><br>......................................................<br>( <?php echo $user['fullname']; ?> )<br>นักศึกษา</div>
-        <div class="col-6"><br>......................................................<br>( <?php echo $user['mentor_name']; ?> )<br>ครูฝึก/ผู้ควบคุม</div>
+    <!-- ส่วนเซ็นชื่อกำกับ -->
+    <div class="signature-block mt-3 pt-2" style="font-size: 13px;">
+        <table style="width: 100%; border: none;">
+            <tr>
+                <td style="width: 50%; text-align: center; border: none !important;">
+                    ......................................................<br>
+                    ( <?php echo htmlspecialchars($user['fullname']); ?> )<br>
+                    นักศึกษา
+                </td>
+                <td style="width: 50%; text-align: center; border: none !important;">
+                    ......................................................<br>
+                    ( <?php echo htmlspecialchars($user['mentor_name'] ?: '......................................................'); ?> )<br>
+                    ครูฝึก/ผู้ควบคุม
+                </td>
+            </tr>
+        </table>
     </div>
 </div>
-<?php endforeach; ?>
+<?php 
+    $part++;
+    endforeach; 
+    $week_num++;
+endforeach; 
+?>
 
 </body>
 </html>
