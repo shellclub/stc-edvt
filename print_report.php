@@ -68,10 +68,10 @@ function dateThaiShort($strDate) {
             margin: 0;
             padding: 0;
             font-size: 13px;
-            line-height: 1.4;
+            line-height: 1.45;
         }
 
-        /* มุมมองบนหน้าจอคอมพิวเตอร์ */
+        /* สำหรับการแสดงผลบนหน้าจอ */
         @media screen {
             .page-container { 
                 width: 210mm; 
@@ -80,15 +80,14 @@ function dateThaiShort($strDate) {
                 margin: 10mm auto; 
                 background: white; 
                 box-shadow: 0 0 10px rgba(0,0,0,0.5); 
-                position: relative;
             }
         }
 
-        /* มุมมองการสั่งพิมพ์ / บันทึกเป็น PDF */
+        /* สำหรับการสั่งพิมพ์ (Print / Save PDF) */
         @media print {
             @page { 
                 size: A4 portrait; 
-                margin: 12mm; /* ให้เบราว์เซอร์จัดการขอบกระดาษจริง */
+                margin: 15mm 12mm 15mm 12mm; /* ให้ Margin เบราว์เซอร์คุมระยะ ป้องกันตัวหนังสือชนขอบ/ทับกัน */
             }
             body { 
                 background: white !important; 
@@ -107,25 +106,29 @@ function dateThaiShort($strDate) {
             }
             .no-print { display: none !important; }
             
-            /* ป้องกันแถวตารางขาดครึ่ง */
+            /* กฎสำคัญ: ป้องกันแถวตารางขาดครึ่งตัวอักษร */
             tr { 
                 page-break-inside: avoid !important; 
                 break-inside: avoid !important; 
             }
+            
+            /* ให้หัวตารางวนซ้ำอัตโนมัติหากสัปดาห์นั้นยาวจนขึ้นหน้า 2 */
             thead { 
                 display: table-header-group; 
             }
+            
+            /* ป้องกันลายเซ็นขาดวิ่น */
             .signature-block {
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
             }
         }
 
-        /* สไตล์ตาราง */
+        /* สไตล์ตารางรายงาน */
         .table-custom {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 12px;
+            margin-bottom: 15px;
         }
         .table-custom th, .table-custom td {
             border: 1px solid #000 !important;
@@ -154,13 +157,14 @@ function dateThaiShort($strDate) {
         }
 
         .report-text {
-            font-size: 12px;
-            line-height: 1.45;
+            font-size: 12.5px;
             word-break: break-word;
             white-space: normal;
         }
 
         .img-report {
+            max-width: 100px;
+            max-height: 80px;
             object-fit: cover;
             border-radius: 3px;
             border: 1px solid #ccc;
@@ -218,38 +222,18 @@ function dateThaiShort($strDate) {
     </table>
 </div>
 
-<!-- ================= รายงานรายสัปดาห์ (1 หรือ 2 หน้าอัตโนมัติตามความยาวเนื้อหา) ================= -->
+<!-- ================= รายงานรายสัปดาห์ (1 สัปดาห์ = 1 ชุดข้อมูล มีลายเซ็นท้ายสัปดาห์) ================= -->
 <?php 
 $week_num = 1;
 foreach ($weeks as $week_id => $days): 
     $data_in_week = [];
-    $total_chars = 0;
-
     foreach ($days as $d) {
         $day_name = date('l', strtotime($d['report_date']));
         $data_in_week[$day_name] = $d;
-        $total_chars += mb_strlen($d['job_details'] ?? '', 'UTF-8');
     }
-
-    // หากข้อความยาวเกิน 400 ตัวอักษรจะตัดแบ่ง 2 หน้า (หน้าละ 3 วัน) ถ้าไม่เกินจะรวมเป็น 1 หน้าเดียว
-    if ($total_chars > 400) {
-        $chunked_days = array_chunk($work_days, 3, true);
-    } else {
-        $chunked_days = [$work_days];
-    }
-
-    $part = 1;
-    $total_parts = count($chunked_days);
-
-    foreach ($chunked_days as $page_days):
 ?>
 <div class="page-container">
-    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 8px;">
-        <h5 class="fw-bold mb-0" style="font-size: 14pt;">บันทึกรายงานการฝึกงานประจำสัปดาห์ที่ <?php echo $week_num; ?></h5>
-        <?php if ($total_parts > 1): ?>
-            <span style="font-size: 11px; color: #555;">(หน้าที่ <?php echo $part; ?>/<?php echo $total_parts; ?>)</span>
-        <?php endif; ?>
-    </div>
+    <h5 class="fw-bold mb-3" style="font-size: 14pt;">บันทึกรายงานการฝึกงานประจำสัปดาห์ที่ <?php echo $week_num; ?></h5>
     
     <table class="table-custom">
         <thead>
@@ -262,7 +246,7 @@ foreach ($weeks as $week_id => $days):
         </thead>
         <tbody>
             <?php 
-            foreach ($page_days as $eng => $th): 
+            foreach ($work_days as $eng => $th): 
                 $row = isset($data_in_week[$eng]) ? $data_in_week[$eng] : null;
             ?>
             <tr>
@@ -270,7 +254,7 @@ foreach ($weeks as $week_id => $days):
                     <strong>วัน<?php echo $th; ?></strong><br>
                     <small style="font-size: 11px; color: #444;"><?php echo $row ? dateThaiShort($row['report_date']) : '-'; ?></small>
                 </td>
-                <td class="report-text" style="<?php echo ($total_parts == 1) ? 'height: 65px;' : 'height: 120px;'; ?>">
+                <td class="report-text">
                     <?php echo ($row && !empty(trim($row['job_details']))) ? nl2br(htmlspecialchars($row['job_details'])) : '<span class="text-muted">- ไม่มีบันทึกงาน -</span>'; ?>
                 </td>
                 <td class="report-text text-danger" style="font-size: 11px;">
@@ -278,7 +262,7 @@ foreach ($weeks as $week_id => $days):
                 </td>
                 <td style="text-align: center; vertical-align: middle;">
                     <?php if ($row && !empty($row['report_image'])): ?>
-                        <img src="uploads/<?php echo htmlspecialchars($row['report_image']); ?>" class="img-report" style="<?php echo ($total_parts == 1) ? 'max-width: 90px; max-height: 60px;' : 'max-width: 110px; max-height: 85px;'; ?>">
+                        <img src="uploads/<?php echo htmlspecialchars($row['report_image']); ?>" class="img-report">
                     <?php else: ?>
                         <span class="text-muted small">-</span>
                     <?php endif; ?>
@@ -288,8 +272,8 @@ foreach ($weeks as $week_id => $days):
         </tbody>
     </table>
 
-    <!-- ส่วนเซ็นชื่อกำกับ -->
-    <div class="signature-block mt-3 pt-2" style="font-size: 13px;">
+    <!-- ส่วนเซ็นชื่อ 1 จุด ต่อ 1 สัปดาห์ (อยู่ท้ายสุดของตารางสัปดาห์นั้น) -->
+    <div class="signature-block mt-4 pt-2" style="font-size: 13px;">
         <table style="width: 100%; border: none;">
             <tr>
                 <td style="width: 50%; text-align: center; border: none !important;">
@@ -307,8 +291,6 @@ foreach ($weeks as $week_id => $days):
     </div>
 </div>
 <?php 
-    $part++;
-    endforeach; 
     $week_num++;
 endforeach; 
 ?>
