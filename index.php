@@ -24,10 +24,11 @@
             align-items: center;
             justify-content: center;
             margin: 0;
-            overflow: hidden;
+            padding: 20px 0;
+            overflow-x: hidden;
         }
 
-        /* ตกแต่งพื้นหลังด้วยวงกลมเบลอๆ (Modern Blur) */
+        /* ตกแต่งพื้นหลังด้วยวงกลมเบลอ */
         .bg-circle {
             position: fixed;
             width: 400px;
@@ -45,7 +46,7 @@
             box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
             width: 100%;
             max-width: 420px;
-            padding: 40px;
+            padding: 35px 40px;
             border: 1px solid rgba(255, 255, 255, 0.3);
             animation: fadeInDown 0.8s ease-out;
         }
@@ -57,13 +58,13 @@
 
         .logo-box {
             background: white;
-            width: 90px;
-            height: 90px;
+            width: 85px;
+            height: 85px;
             border-radius: 25px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 20px;
+            margin: 0 auto 15px;
             box-shadow: 0 10px 20px rgba(0,0,0,0.1);
         }
 
@@ -105,7 +106,7 @@
             letter-spacing: 1px;
             transition: 0.3s;
             color: white;
-            margin-top: 10px;
+            margin-top: 5px;
         }
 
         .btn-login:hover {
@@ -113,6 +114,25 @@
             transform: translateY(-2px);
             box-shadow: 0 10px 20px rgba(128, 0, 0, 0.2);
             color: white;
+        }
+
+        /* ปุ่มค้นหากลุ่มนักศึกษา */
+        .btn-search-group {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border: 1px solid #c8e6c9;
+            border-radius: 12px;
+            padding: 11px;
+            transition: 0.3s;
+            text-decoration: none;
+            display: block;
+        }
+
+        .btn-search-group:hover {
+            background: #2e7d32;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(46, 125, 50, 0.2);
         }
 
         .forgot-password {
@@ -129,9 +149,9 @@
         .footer-text {
             font-size: 0.75rem;
             color: #888;
-            margin-top: 30px;
+            margin-top: 25px;
             border-top: 1px solid #eee;
-            padding-top: 20px;
+            padding-top: 15px;
         }
     </style>
 </head>
@@ -140,15 +160,16 @@
     <div class="bg-circle" style="top: -100px; left: -100px;"></div>
     <div class="bg-circle" style="bottom: -100px; right: -100px;"></div>
 
-    <div class="container d-flex justify-content-center px-4">
+    <div class="container d-flex justify-content-center px-3">
         <div class="login-card shadow-lg text-center">
             <div class="logo-box">
-                <img src="image/icon_stc.jpg" width="70" alt="STC Logo">
+                <img src="image/icon_stc.jpg" width="65" alt="STC Logo" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3135/3135755.png';">
             </div>
             
-            <h4 class="kanit fw-bold mb-1">ระบบรายงานฝึกงาน</h4>
+            <h4 class="kanit fw-bold mb-1 text-dark">ระบบรายงานฝึกงาน</h4>
             <p class="text-muted small mb-4">วิทยาลัยเทคนิคสุพรรณบุรี</p>
 
+            <!-- ฟอร์มเข้าสู่ระบบนักศึกษา -->
             <form action="login_process.php" method="POST" class="text-start">
                 <div class="mb-3">
                     <label class="form-label">รหัสนักศึกษา</label>
@@ -172,20 +193,42 @@
                     </div>
                 </div>
 
-                <button type="submit" class="btn btn-login w-100 mt-2 kanit">
-                    <i class="bi bi-box-arrow-in-right me-2"></i> เข้าสู่ระบบ
+                <button type="submit" class="btn btn-login w-100 kanit shadow-sm">
+                    <i class="bi bi-box-arrow-in-right me-2"></i> เข้าสู่ระบบนักศึกษา
                 </button>
             </form>
-                <a href="EDVT-STC.pdf" target="_blank" class="btn btn-outline-secondary w-100 mt-3 kanit shadow-sm" 
-   style="border-radius: 12px; padding: 10px; border: 1px dashed #d4af37; color: #b8860b; background: #fffdf5;">
-    <div class="d-flex align-items-center justify-content-center">
-        <i class="bi bi-book-half me-2 fs-5"></i>
-        <div class="text-start">
-            <div class="fw-bold" style="font-size: 0.85rem; line-height: 1;">คู่มือการใช้งานระบบ</div>
-            <small style="font-size: 0.7rem; opacity: 0.8;">คลิกเพื่อเปิดไฟล์เอกสาร PDF</small>
-        </div>
-    </div>
-</a>
+
+            <div class="d-flex align-items-center my-3">
+                <hr class="flex-grow-1 my-0">
+                <span class="px-2 text-muted small">หรือ</span>
+                <hr class="flex-grow-1 my-0">
+            </div>
+
+            <!-- ปุ่มทางลัด: ค้นหากลุ่มนักศึกษา (ไม่ต้องล็อกอินก็เข้าดูได้) -->
+            <a href="admin/teacher_search.php" class="btn-search-group kanit shadow-sm mb-2">
+                <div class="d-flex align-items-center justify-content-center">
+                    <i class="bi bi-search me-2 fs-5"></i>
+                    <div class="text-start">
+                        <div class="fw-bold" style="font-size: 0.88rem; line-height: 1.1;">ค้นหากลุ่มนักศึกษาฝึกงาน</div>
+                        <small style="font-size: 0.72rem; opacity: 0.9;">สำหรับครูและผู้เกี่ยวข้อง (ไม่ต้องล็อกอิน)</small>
+                    </div>
+                </div>
+            </a>
+
+            <!-- คู่มือการใช้งานระบบ -->
+            <a href="EDVT-STC.pdf" target="_blank" class="btn btn-outline-secondary w-100 kanit shadow-sm" 
+               style="border-radius: 12px; padding: 10px; border: 1px dashed #d4af37; color: #b8860b; background: #fffdf5;">
+                <div class="d-flex align-items-center justify-content-center">
+                    <i class="bi bi-book-half me-2 fs-5"></i>
+                    <div class="text-start">
+                        <div class="fw-bold" style="font-size: 0.85rem; line-height: 1;">คู่มือการใช้งานระบบ</div>
+                        <small style="font-size: 0.7rem; opacity: 0.8;">คลิกเพื่อเปิดไฟล์เอกสาร PDF</small>
+                    </div>
+                </div>
+            </a>
+
+           
+
             <div class="footer-text">
                 <div class="fw-bold mb-1">แผนกอิเล็กทรอนิกส์</div>
                 © 2026 Suphanburi Technical College
