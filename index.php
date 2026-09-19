@@ -205,15 +205,7 @@
             </div>
 
             <!-- ปุ่มทางลัด: ค้นหากลุ่มนักศึกษา (ไม่ต้องล็อกอินก็เข้าดูได้) -->
-            <a href="admin/teacher_search.php" class="btn-search-group kanit shadow-sm mb-2">
-                <div class="d-flex align-items-center justify-content-center">
-                    <i class="bi bi-search me-2 fs-5"></i>
-                    <div class="text-start">
-                        <div class="fw-bold" style="font-size: 0.88rem; line-height: 1.1;">ค้นหากลุ่มนักศึกษาฝึกงาน</div>
-                        <small style="font-size: 0.72rem; opacity: 0.9;">สำหรับครูและผู้เกี่ยวข้อง (ไม่ต้องล็อกอิน)</small>
-                    </div>
-                </div>
-            </a>
+            
 
             <!-- คู่มือการใช้งานระบบ -->
             <a href="EDVT-STC.pdf" target="_blank" class="btn btn-outline-secondary w-100 kanit shadow-sm" 
@@ -227,7 +219,12 @@
                 </div>
             </a>
 
-           
+            <!-- ลิงก์เข้าสู่ระบบ Admin / ครูนิเทศก์ -->
+            <div class="mt-3">
+                <a href="admin/index.php" class="text-decoration-none small text-muted">
+                    <i class="bi bi-shield-lock me-1"></i> เข้าสู่ระบบสำหรับเจ้าหน้าที่
+                </a>
+            </div>
 
             <div class="footer-text">
                 <div class="fw-bold mb-1">แผนกอิเล็กทรอนิกส์</div>
