@@ -181,11 +181,12 @@ if (isset($_POST['btn_upload']) && isset($_FILES['student_file']['tmp_name'])) {
 
             // คอลัมน์ AN (Index 39) = ชื่อเต็มกลุ่ม ดึงชื่อย่อในวงเล็บ เช่น ชย.2/2
             $full_group = trim($data[39] ?? '');
+            /*
             if (preg_match('/\((.*?)\)/', $full_group, $matches)) {
                 $group_name = trim($matches[1]);
             } else {
                 $group_name = $full_group;
-            }
+            }*/
 
             // คอลัมน์ BW (Index 74) = ชื่อครูที่ปรึกษา
             $advisor_name = trim($data[74] ?? '');

@@ -88,7 +88,7 @@ $saved_groups = $is_teacher_logged_in ? getTeacherSavedGroups($teacher_id) : [];
                     <i class="bi bi-person-circle me-1"></i> กลับหน้าหลักของฉัน
                 </a>
             <?php else: ?>
-                <a href="admin_login.php" class="btn btn-outline-primary rounded-pill px-3 shadow-sm">
+                <a href="index.php" class="btn btn-outline-primary rounded-pill px-3 shadow-sm">
                     <i class="bi bi-box-arrow-in-right me-1"></i> เข้าสู่ระบบครูนิเทศก์
                 </a>
             <?php endif; ?>
@@ -101,7 +101,7 @@ $saved_groups = $is_teacher_logged_in ? getTeacherSavedGroups($teacher_id) : [];
             <i class="bi bi-info-circle-fill fs-4 me-3 text-primary"></i>
             <div>
                 <strong>สำหรับครูนิเทศก์:</strong> หากต้องการบันทึกกลุ่มที่ดูแลไว้ในหน้าหลักเพื่อเปิดดูครั้งถัดไปได้ทันที กรุณา 
-                <a href="admin_login.php" class="alert-link text-decoration-underline">เข้าสู่ระบบ</a> ก่อนบันทึกกลุ่ม
+                <a href="index.php" class="alert-link text-decoration-underline">เข้าสู่ระบบ</a> ก่อนบันทึกกลุ่ม
             </div>
         </div>
     <?php endif; ?>
