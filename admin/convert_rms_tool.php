@@ -126,13 +126,15 @@ if (isset($_POST['btn_convert']) && isset($_FILES['rms_file']['tmp_name'])) {
                 // ชื่อกลุ่ม คอลัมน์ AN (Index 39) ตัดเอาในวงเล็บ เช่น ชย.2/2
                // ตัวอย่าง: ถ้าข้อความมาแนว "สาขางาน... | ปวช.2/1" หรือต้องการข้อความฝั่งที่มีคำว่า ปวช.
 $full_group = trim($data[39] ?? '');
+$group_name = $full_group;
+/*
 $group_parts = explode('|', $full_group);
 if (count($group_parts) > 1) {
     // ตัดเอาฝั่งหลังขีด | 
     $group_name = trim($group_parts[1]);
 } else {
     $group_name = $full_group;
-}
+}*/
 
                 // ครูที่ปรึกษา คอลัมน์ BW (Index 74)
                 $advisor_name = trim($data[74] ?? '');

@@ -186,7 +186,6 @@ if (isset($_POST['btn_upload']) && isset($_FILES['student_file']['tmp_name'])) {
             } else {
                 $group_name = $full_group;
             }
-
             // คอลัมน์ BW (Index 74) = ชื่อครูที่ปรึกษา
             $advisor_name = trim($data[74] ?? '');
         } 

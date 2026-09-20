@@ -116,6 +116,7 @@ $msg =$_GET['msg'] ?? '';
                 <a class="nav-link" href="bilateral_dashboard.php"><i class="bi bi-grid me-2"></i> หน้าหลัก</a>
                 <a class="nav-link" href="bilateral_groups_summary.php"><i class="bi bi-people me-2"></i> จัดการกลุ่ม</a>
                 <a class="nav-link active" href="import_excel.php"><i class="bi bi-file-earmark-arrow-up me-2"></i> นำเข้า Excel</a>
+                <a class="nav-link " href="import_excel_old.php"><i class="bi bi-file-earmark-arrow-up me-2"></i> นำเข้า CSV </a>
                 <a class="nav-link" href="convert_rms_tool.php"><i class="bi bi-magic me-2"></i> แปลงไฟล์ RMS</a>
                 <hr class="border-white border-opacity-10 my-3">
                 <a class="nav-link text-danger-emphasis" href="admin_logout.php"><i class="bi bi-box-arrow-right me-2"></i> ออกจากระบบ</a>
